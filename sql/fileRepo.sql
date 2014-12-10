@@ -21,66 +21,118 @@
 -- LSST Database Schema for Metadata Store, file-repository related.
 
 
-CREATE TABLE FileMeta
+CREATE TABLE File
     -- <descr>Information about one file. One row per file.</descr>
 (
-    fileMetaId INT NOT NULL AUTO_INCREMENT,
+    fileId INT NOT NULL AUTO_INCREMENT,
+    fileRepoId INT NOT NULL,
+        -- <descr>Id of the repo this file belongs to.</descr>
+    fileName VARCHAR(255) NOT NULL,
+    url VARCHAR(255),
+        -- <descr>Virtual location.</descr>
     checksum VARCHAR(64),
     createTime DATETIME,
     uploadTime DATETIME,
     size BIGINT,
         -- <descr>File size in bytes.</descr>
-    PRIMARY KEY FileMeta_fileMetaId(fileMetaId)
+    availability ENUM('published', 'notPublished'),
+        -- <descr>I am sure there are many more states we can come up
+        -- with.</descr>
+    accessibility ENUM('public', 'private'),
+        -- <descr>If we want to do in that direction, we'd need to cover
+        -- group access too.</descr>
+    onDisk BOOL,
+        -- <descr>Bitwise OR describing locations
+        -- <ul>
+        --    <li>0x1: in memory only
+        --    <li>0x2: on ssd
+        --    <li>0x4: on spinning disk
+        --    <li>0x8: on tape
+        --  </ul></descr>
+    backupStatus ENUM('requested', 'ongoing', 'notBackedUp'),
+    lastBackup DATETIME,
+        -- <descr>Time of the completion of the last successful backup.
+        -- </descr>
+    PRIMARY KEY PK_File_fileId(fileId)
+) ENGINE = InnoDB;
+ 
+
+CREATE TABLE FileAnnotations
+    -- <descr>Annotations for entries in File, in key-value form.-- </descr>
+(
+    fileId INT NOT NULL,
+        -- <descr>References entry in File table.</descr>
+    userId INT NOT NULL,
+        -- <descr>User who entered given annotation. References entry in
+        -- User table.</descr>
+    key VARCHAR(64) NOT NULL,
+    value TEXT NOT NULL,
+    INDEX IDX_FileAnnotations_repoId(repoId),
+    INDEX IDX_FileAnnotations_userId(userId)
 ) ENGINE = InnoDB;
  
  
--- FileMetaAnnotations, similar to RepoAnnotations goes here...
- 
- 
 CREATE TABLE FitsMeta
-    -- <descr>Table of basic FITS file information. Name, location,
-    -- number of HDUs.</descr>
+    -- <descr>FITS-file specific information.</descr>
 (
-    fitsFileId BIGINT NOT NULL AUTO_INCREMENT,
-    fileName   VARCHAR(255) NOT NULL,
-    hdus       TINYINT      NOT NULL,
-    PRIMARY KEY (fitsFileId)
+    fileId BIGINT NOT NULL,
+        -- <descr>Id of the corresponding entry in File table.</descr>
+    hdus TINYINT NOT NULL,
+    PRIMARY KEY PK_FitsMeta_fileId(fileId)
 ) ENGINE=InnoDB;
- 
-CREATE TABLE FitsKeyValues
-    -- <descr>Table of FITS keyword and value pairs. </decr>
+
+
+CREATE TABLE FitsStructuredMeta
+    -- <descr>FITS-file specific structured metadata.</descr>
 (
-    fitsFileId  BIGINT      NOT NULL,
-    fitsKey     VARCHAR(8)  NOT NULL,
-    hdu         TINYINT     NOT NULL,
+    fileId BIGINT NOT NULL,
+    hdu TINYINT NOT NULL,
+    equinox DOUBLE,
+    ra DOUBLE NOT NULL,
+        -- <descr>Ra of amp center.</descr>
+        -- <ucd>pos.eq.ra</ucd>
+        -- <unit>deg</unit>
+    decl DOUBLE NOT NULL,
+        -- <descr>Decl of amp center.</descr>
+        -- <ucd>pos.eq.dec</ucd>
+        -- <unit>deg</unit>
+    rotAng DOUBLE,
+    obsStart TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        -- <descr>Start of the exposure, TAI, accurate to 10ms.</descr>
+        -- <ucd>time.start</ucd>
+    expMidpt DOUBLE NOT NULL,
+        -- <descr>Midpoint for exposure. TAI, accurate to 10ms.</descr>
+        -- <ucd>time.epoch</ucd>
+    expTime DOUBLE NOT NULL,
+        -- <descr>Duration of exposure, accurate to 10ms.</descr>
+        -- <ucd>time.duration</ucd>
+        -- <unit>s</unit>
+    INDEX IDX_fitsStructuredMeta_fileId(fileId),
+    INDEX IDX_fitsStructuredMeta_ra(ra),
+    INDEX IDX_fitsStructuredMeta_decl(decl)
+) ENGINE=InnoDB;
+
+
+CREATE TABLE FitsUnstructuredMeta
+    -- <descr>FITS-file specific unstructured metadata
+    -- (key/value pairs).</descr>
+(
+    fileId BIGINT NOT NULL,
+        -- <descr>Id of the corresponding entry in File table.</descr>
+    fitsKey VARCHAR(8) NOT NULL,
+    hdu TINYINT NOT NULL,
     stringValue VARCHAR(90),
-    intValue    INTEGER,
+    intValue INTEGER,
     doubleValue DOUBLE,
-    INDEX IDX_fitsKeyVal_fitsFileId (fitsFileId),
-    INDEX IDX_fitsKeyVal_fitsKey (fitsKey)
+    INDEX IDX_fitsUnstructuredMeta_fitsFileId(fleId),
+    INDEX IDX_fitsUnstructuredMeta_fitsKey(fitsKey)
 ) ENGINE=InnoDB;
- 
- 
-CREATE TABLE FitsPositions
-    -- <descr>Table of RA and Dec position and exposure time.</descr>
-(
-    fitsFileId BIGINT  NOT NULL,
-    hdu        TINYINT NOT NULL,
-    equinox    DOUBLE,
-    pdec       DOUBLE,
-    pra        DOUBLE,
-    rotang     DOUBLE,
-    pdate      TIMESTAMP,
-    INDEX IDX_fitsPos_fitsFileId (fitsFileId),
-    INDEX IDX_fitsPos_date (pdate),
-    INDEX IDX_fitsPos_ra (pra),
-    INDEX IDX_fitsPos_dec (pdec)
-) ENGINE=InnoDB;
- 
- 
-ALTER TABLE FitsKeyValues ADD CONSTRAINT FK_fitsKeyVal_fitsFileId
-    FOREIGN KEY (fitsFileId) REFERENCES FitsFiles (fitsFileId);
- 
-ALTER TABLE FitsPositions ADD CONSTRAINT FK_fitsPos_fitsFileId
-    FOREIGN KEY (fitsFileId) REFERENCES FitsFiles (fitsFileId);
+
+
+# todo
+#ALTER TABLE FitsKeyValues ADD CONSTRAINT FK_fitsKeyVal_fitsFileId
+#    FOREIGN KEY (fitsFileId) REFERENCES FitsFiles(fitsFileId);
+# 
+#ALTER TABLE FitsPositions ADD CONSTRAINT FK_fitsPos_fitsFileId
+#    FOREIGN KEY (fitsFileId) REFERENCES FitsFiles(fitsFileId);
  

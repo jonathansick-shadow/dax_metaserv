@@ -24,12 +24,25 @@
 CREATE TABLE User 
     -- <descr>Basic information about every registered user. This is 
     -- a global table, (there is only one in the entire Metadata Store).
-    -- Credentials are handled separately.</descr>
+    -- Credentials are handled separately. Ultimately this will be managed
+    -- through LDAP.</descr>
 (
     userId INT NOT NULL AUTO_INCREMENT,
+        -- <descr>Unique identifier.</descr>
+        -- <ucd>meta.id</ucd>
     firstName VARCHAR(64),
     lastName VARCHAR(64),
     affiliation VARCHAR(64),
+    PRIMARY KEY User_userId(userId)
+) ENGINE = InnoDB;
+
+
+CREATE TABLE User_Authorization
+    -- <descr>Per-user authorization.</descr>
+(
+    userId INT NOT NULL,
+        -- <descr>Id of the user for who given authorization is defined.
+        -- </descr>
     accessLevel ENUM('default', 'admin'),
     dbLimit INT,
         -- <descr>Database storage limit, in GB.</descr>
@@ -43,11 +56,40 @@ CREATE TABLE User
         -- <descr>Query load limit. Each query will have a "cost"
         -- associated with it. This limit is per 24h. -1 = unlimited.
         -- </descr>
-    PRIMARY KEY User_userId(userId)
 ) ENGINE = InnoDB;
- 
--- Question: should we model groups here???
- 
+
+
+CREATE TABLE Group
+   -- <descr>Basic information about every group.</descr>
+(
+    groupId INT NOT NULL,
+        -- <descr>Unique identifier.</descr>
+        -- <ucd>meta.id</ucd>
+    groupName VARCHAR(64),
+    PRIMARY KEY Group_groupId(groupId)
+) ENGINE = InnoDB;
+
+
+CREATE TABLE Group_Authorization
+    -- <descr>Per-group authorization.</descr>
+(
+    groupId INT NOT NULL,
+        -- <descr>Id of the group for which given authorization is defined.
+        -- </descr>
+) ENGINE = InnoDB;
+
+
+CREATE TABLE User_To_Group
+    -- <descr>Definition of which user belongs to which group.</descr>
+(
+    userId INT NOT NULL,
+        -- <descr>Id of the user.-- </descr>
+    groupId INT NOT NULL,
+        -- <descr>Id of the group.-- </descr>
+    INDEX IDX_USERTOGROUP_userId(userId),
+    INDEX IDX_USERTOGROUP_groupId(groupId)
+) ENGINE = InnoDB;
+
  
 CREATE TABLE Repo
     -- <descr>Information about repositories, one row per repo.
@@ -60,15 +102,16 @@ CREATE TABLE Repo
         -- <descr>Virtual location.</descr>
     project VARCHAR(64),
         -- <descr>Project name, e.g. LSST, SDSS, GAIA</descr>
-    repoType ENUM('db', 'fits', 'config', 'custom'),
+    repoType ENUM('db', 'butler', 'file', 'custom'),
+
     dataRelease TINYINT,
         <descr>Data Release number, if applicable.</descr>
     version VARCHAR(255),
-    sizeOnDisk BIGINT,
-        -- <descr>Size in bytes.</descr>
+    shortName VARCHAR(255)
     description VARCHAR(255),
     owner INT,
         -- <descr> references entry in User table</descr>
+    checksum VARCHAR(64),
     createTime DATETIME,
     uploadTime DATETIME,
     priorityLevel ENUM('scratch', 'keepShort', 'keepLong'),
@@ -79,6 +122,14 @@ CREATE TABLE Repo
     accessibility ENUM('public', 'private'),
         -- <descr>If we want to do in that direction, we'd need to cover
         -- group access too.</descr>
+    onDisk BOOL,
+        -- <descr>Bitwise OR describing locations
+        -- <ul>
+        --    <li>0x1: in memory only
+        --    <li>0x2: on ssd
+        --    <li>0x4: on spinning disk
+        --    <li>0x8: on tape
+        --  </ul></descr>
     backupStatus ENUM('requested', 'ongoing', 'notBackedUp'),
     lastBackup DATETIME,
         -- <descr>Time of the completion of the last successful backup.
@@ -124,11 +175,10 @@ CREATE TABLE FileRepoTypes
     -- </descr>
 ( 
     fileRepoId INT,
-        -- <descr>References an entry in FileRepo
+        -- <descr>References an entry in FileRepo.</descr>
+    fileType ENUM('fits', 'config', 'csv', 'tcv', 'custom'),
     fileCount INT,
         -- <descr>Number of files in the repo.</descr>
-    fileType ENUM('fits', 'config', 'csv', 'tcv', 'custom'),
- 
     INDEX KEY IDX_FileRepoTypes_fileRepoId(fileRepoId)
 ) ENGINE = InnoDB;
  
