@@ -25,18 +25,46 @@ CREATE TABLE DbMeta
     -- <descr>Information about one file. One row per file.</descr>
 (
     dbMetaId INT NOT NULL AUTO_INCREMENT,
-   -- tbd what else
-    -- maybe info how to connect to that database?
+        -- <descr>Unique identifier.</descr>
+        -- <ucd>meta.id</ucd>
+    dbName VARCHAR(64),
+        -- <descr>The name of the database.</descr>
+    PRIMARY KEY DbMeta_dbMetaId(dbMetaId)
 ) ENGINE=InnoDB;
  
-CREATE TABLE DDT
-    -- <descr>A Data Definition Table will be maintained to augment standard
-    -- MySQL-managed metadata. DDT will contain: UI-specific information such 
-    -- as display precision, or whether to display a given column by default.
-    --  VO-compliance related metadata, such us UIDs for each column.</descr>
-(
-    tableName VARCHAR(64),
 
-    -- more tbd
- 
+CREATE TABLE DDT_Table
+    -- <descr>A Data Definition Table. Augments standard MySQL-managed metadata.
+    -- This is for table-level metadata.</descr>
+(
+    tableId INT NOT NULL AUTO_INCREMENT,
+        -- <descr>Unique identifier.</descr>
+        -- <ucd>meta.id</ucd>
+    dbMetaId INT NOT NULL,
+        -- <descr>References entry in DbMeta - database where this table
+        -- belongs.</descr>
+    tableName VARCHAR(64),
+        -- <descr>The name of the table.</descr>
+) ENGINE=InnoDB;
+
+
+CREATE TABLE DDT_Column
+    -- <descr>A Data Definition Table. Augments standard MySQL-managed metadata.
+    -- This is for column-level metadata.</descr>
+(
+    columnId INT NOT NULL AUTO_INCREMENT,
+        -- <descr>Unique identifier.</descr>
+        -- <ucd>meta.id</ucd>
+    tableId INT NOT NULL AUTO_INCREMENT,
+        -- <descr>References entry in DDT_Table - table where this column
+        -- belongs.</descr>
+    ucd VARCHAR(1024),
+        -- <descr> UCD definitions for a given column. Based on:
+        -- http://www.ivoa.net/Documents/cover/UCDlist-20070402.html.</descr>
+    units VARCHAR(64),
+        -- <descr>Description of units for a given column.</descr>
+    SUI_displayPrec INT,
+        -- <descr>Display precision, for SUI.</descr>
+    SUI_displayCol BOOL DEFAULT True,
+        -- <descr>A flag whether to display this column or not by default.</descr>
 ) ENGINE=InnoDB;
