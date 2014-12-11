@@ -45,6 +45,8 @@ CREATE TABLE DDT_Table
         -- belongs.</descr>
     tableName VARCHAR(64),
         -- <descr>The name of the table.</descr>
+    descr TEXT,
+        -- <descr>Table description.</descr>
 ) ENGINE=InnoDB;
 
 
@@ -58,6 +60,8 @@ CREATE TABLE DDT_Column
     tableId INT NOT NULL AUTO_INCREMENT,
         -- <descr>References entry in DDT_Table - table where this column
         -- belongs.</descr>
+    descr TEXT,
+        -- <descr>Column description.</descr>
     ucd VARCHAR(1024),
         -- <descr> UCD definitions for a given column. Based on:
         -- http://www.ivoa.net/Documents/cover/UCDlist-20070402.html.</descr>
