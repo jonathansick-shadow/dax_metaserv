@@ -124,7 +124,7 @@ CREATE TABLE FitsUnstructuredMeta
     stringValue VARCHAR(90),
     intValue INTEGER,
     doubleValue DOUBLE,
-    INDEX IDX_fitsUnstructuredMeta_fitsFileId(fleId),
+    INDEX IDX_fitsUnstructuredMeta_fitsFileId(fileId),
     INDEX IDX_fitsUnstructuredMeta_fitsKey(fitsKey)
 ) ENGINE=InnoDB;
 

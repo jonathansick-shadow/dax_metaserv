@@ -57,6 +57,8 @@ CREATE TABLE DDT_Column
     columnId INT NOT NULL AUTO_INCREMENT,
         -- <descr>Unique identifier.</descr>
         -- <ucd>meta.id</ucd>
+    columnName VARCHAR(64),
+        -- <descr>The name of the column.</descr>
     tableId INT NOT NULL AUTO_INCREMENT,
         -- <descr>References entry in DDT_Table - table where this column
         -- belongs.</descr>
