@@ -29,9 +29,28 @@ CREATE TABLE DbMeta
         -- <ucd>meta.id</ucd>
     dbName VARCHAR(64),
         -- <descr>The name of the database.</descr>
+    connHost VARCHAR(64),
+        -- <descr>Connection information: host.</descr>
+    connPort INT,
+        -- <descr>Connection information: port.</descr>
     PRIMARY KEY DbMeta_dbMetaId(dbMetaId)
 ) ENGINE=InnoDB;
  
+
+CREATE TABLE DbMetaAnnotations
+    -- <descr>Annotations for entries in DbMeta, in key-value form.-- </descr>
+(
+    dbMetaId INT NOT NULL,
+        -- <descr>References entry in DbMeta table.</descr>
+    userId INT NOT NULL,
+        -- <descr>User who entered given annotation. References entry in
+        -- User table.</descr>
+    key VARCHAR(64) NOT NULL,
+    value TEXT NOT NULL,
+    INDEX IDX_DbMetaAnnotations_dbMetaId(dbMetaId),
+    INDEX IDX_DbMetaAnnotations_userId(userId)
+) ENGINE = InnoDB;
+
 
 CREATE TABLE DDT_Table
     -- <descr>A Data Definition Table. Augments standard MySQL-managed metadata.

@@ -30,6 +30,8 @@ CREATE TABLE User
     userId INT NOT NULL AUTO_INCREMENT,
         -- <descr>Unique identifier.</descr>
         -- <ucd>meta.id</ucd>
+    mysqlUserName VARCHAR(64),
+        -- <descr>MySQL user name.</descr>
     firstName VARCHAR(64),
     lastName VARCHAR(64),
     affiliation VARCHAR(64),
@@ -103,7 +105,6 @@ CREATE TABLE Repo
     project VARCHAR(64),
         -- <descr>Project name, e.g. LSST, SDSS, GAIA</descr>
     repoType ENUM('db', 'butler', 'file', 'custom'),
-
     dataRelease TINYINT,
         <descr>Data Release number, if applicable.</descr>
     version VARCHAR(255),
@@ -111,12 +112,12 @@ CREATE TABLE Repo
     description VARCHAR(255),
     owner INT,
         -- <descr> references entry in User table</descr>
-    checksum VARCHAR(64),
+    checksum VARCHAR(128),
     createTime DATETIME,
-    uploadTime DATETIME,
+    ingestTime DATETIME,
     priorityLevel ENUM('scratch', 'keepShort', 'keepLong'),
         -- <descr>This will be useful when purging.</descr>
-    availability ENUM('published', 'notPublished'),
+    availability ENUM('loading', 'published', 'notPublished', 'locked4Maintenance'),
         -- <descr>I am sure there are many more states we can come up
         -- with.</descr>
     accessibility ENUM('public', 'private'),
@@ -129,14 +130,14 @@ CREATE TABLE Repo
         --    <li>0x2: on ssd
         --    <li>0x4: on spinning disk
         --    <li>0x8: on tape
-        --  </ul></descr>
+        -- </ul></descr>
     backupStatus ENUM('requested', 'ongoing', 'notBackedUp'),
     lastBackup DATETIME,
         -- <descr>Time of the completion of the last successful backup.
         -- </descr>
     PRIMARY KEY repo_repoId(repoId)
 ) ENGINE = InnoDB;
- 
+
  
 CREATE TABLE RepoAnnotations
     -- <descr>Annotations for entries in Repo, in key-value form.
@@ -160,12 +161,13 @@ CREATE TABLE FileRepo
     -- This is a global table, (there is only one in the entire Metadata Store).
     -- </descr>
 ( 
-    fileRepoId INT,
-    fileCount INT,
-        -- <descr>Number of files in the repo.</descr>
-    fileType ENUM('fits', 'config', 'csv', 'tcv', 'custom'),
+    repoId INT,
+        -- <descr>References an entry in Repo.</descr>
+
+    -- can't think of things to put in there right now, but I am sure
+    -- we will identify these things...
  
-    PRIMARY KEY FileRepo_fileRepoId(fileRepoId)
+    PRIMARY KEY FileRepo_repoId(repoId)
 ) ENGINE = InnoDB;
  
  
@@ -174,12 +176,12 @@ CREATE TABLE FileRepoTypes
     -- This is a global table, (there is only one in the entire Metadata Store).
     -- </descr>
 ( 
-    fileRepoId INT,
+    repoId INT,
         -- <descr>References an entry in FileRepo.</descr>
     fileType ENUM('fits', 'config', 'csv', 'tcv', 'custom'),
     fileCount INT,
         -- <descr>Number of files in the repo.</descr>
-    INDEX KEY IDX_FileRepoTypes_fileRepoId(fileRepoId)
+    INDEX KEY IDX_FileRepoTypes_repoId(repoId)
 ) ENGINE = InnoDB;
  
  

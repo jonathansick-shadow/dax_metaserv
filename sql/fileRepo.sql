@@ -25,14 +25,14 @@ CREATE TABLE File
     -- <descr>Information about one file. One row per file.</descr>
 (
     fileId INT NOT NULL AUTO_INCREMENT,
-    fileRepoId INT NOT NULL,
+    repoId INT NOT NULL,
         -- <descr>Id of the repo this file belongs to.</descr>
     fileName VARCHAR(255) NOT NULL,
     url VARCHAR(255),
         -- <descr>Virtual location.</descr>
-    checksum VARCHAR(64),
+    checksum VARCHAR(128),
     createTime DATETIME,
-    uploadTime DATETIME,
+    ingestTime DATETIME,
     size BIGINT,
         -- <descr>File size in bytes.</descr>
     availability ENUM('published', 'notPublished'),
