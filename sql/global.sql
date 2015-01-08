@@ -108,7 +108,7 @@ CREATE TABLE Repo
     dataRelease TINYINT,
         <descr>Data Release number, if applicable.</descr>
     version VARCHAR(255),
-    shortName VARCHAR(255)
+    shortName VARCHAR(255),
     description VARCHAR(255),
     owner INT,
         -- <descr> references entry in User table</descr>
