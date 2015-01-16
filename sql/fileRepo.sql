@@ -1,5 +1,5 @@
 -- LSST Data Management System
--- Copyright 2008-2014 AURA/LSST.
+-- Copyright 2014-2015 AURA/LSST.
 -- 
 -- This product includes software developed by the
 -- LSST Project (http://www.lsst.org/).
@@ -18,7 +18,9 @@
 -- the GNU General Public License along with this program.  If not, 
 -- see <https://www.lsstcorp.org/LegalNotices/>.
 
--- LSST Database Schema for Metadata Store, file-repository related.
+-- @brief LSST Database Schema for Metadata Store, file-repository related.
+--
+-- @author Jacek Becla, SLAC
 
 
 CREATE TABLE File
@@ -65,9 +67,9 @@ CREATE TABLE FileAnnotations
     userId INT NOT NULL,
         -- <descr>User who entered given annotation. References entry in
         -- User table.</descr>
-    key VARCHAR(64) NOT NULL,
-    value TEXT NOT NULL,
-    INDEX IDX_FileAnnotations_repoId(repoId),
+    theKey VARCHAR(64) NOT NULL,
+    theValue TEXT NOT NULL,
+    INDEX IDX_FileAnnotations_repoId(fileId),
     INDEX IDX_FileAnnotations_userId(userId)
 ) ENGINE = InnoDB;
  

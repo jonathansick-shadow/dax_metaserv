@@ -1,5 +1,5 @@
 -- LSST Data Management System
--- Copyright 2008-2014 AURA/LSST.
+-- Copyright 2014-2015 AURA/LSST.
 -- 
 -- This product includes software developed by the
 -- LSST Project (http://www.lsst.org/).
@@ -17,8 +17,10 @@
 -- You should have received a copy of the LSST License Statement and 
 -- the GNU General Public License along with this program.  If not, 
 -- see <https://www.lsstcorp.org/LegalNotices/>.
-
--- LSST Database Schema for Metadata Store, database-repository related.
+--
+-- @brief LSST Database Schema for Metadata Store, database-repository related.
+--
+-- @author Jacek Becla, SLAC
 
 
 CREATE TABLE DbMeta
@@ -45,8 +47,8 @@ CREATE TABLE DbMetaAnnotations
     userId INT NOT NULL,
         -- <descr>User who entered given annotation. References entry in
         -- User table.</descr>
-    key VARCHAR(64) NOT NULL,
-    value TEXT NOT NULL,
+    theKey VARCHAR(64) NOT NULL,
+    theValue TEXT NOT NULL,
     INDEX IDX_DbMetaAnnotations_dbMetaId(dbMetaId),
     INDEX IDX_DbMetaAnnotations_userId(userId)
 ) ENGINE = InnoDB;
@@ -66,6 +68,7 @@ CREATE TABLE DDT_Table
         -- <descr>The name of the table.</descr>
     descr TEXT,
         -- <descr>Table description.</descr>
+    PRIMARY KEY DDT_Table(tableId)
 ) ENGINE=InnoDB;
 
 
@@ -78,7 +81,7 @@ CREATE TABLE DDT_Column
         -- <ucd>meta.id</ucd>
     columnName VARCHAR(64),
         -- <descr>The name of the column.</descr>
-    tableId INT NOT NULL AUTO_INCREMENT,
+    tableId INT NOT NULL,
         -- <descr>References entry in DDT_Table - table where this column
         -- belongs.</descr>
     descr TEXT,
@@ -92,4 +95,5 @@ CREATE TABLE DDT_Column
         -- <descr>Display precision, for SUI.</descr>
     SUI_displayCol BOOL DEFAULT True,
         -- <descr>A flag whether to display this column or not by default.</descr>
+    PRIMARY KEY DDT_Column(columnId)
 ) ENGINE=InnoDB;

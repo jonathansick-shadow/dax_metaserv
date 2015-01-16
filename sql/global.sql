@@ -1,5 +1,5 @@
 -- LSST Data Management System
--- Copyright 2008-2014 AURA/LSST.
+-- Copyright 2014-2015 AURA/LSST.
 -- 
 -- This product includes software developed by the
 -- LSST Project (http://www.lsst.org/).
@@ -18,7 +18,9 @@
 -- the GNU General Public License along with this program.  If not, 
 -- see <https://www.lsstcorp.org/LegalNotices/>.
 
--- LSST Database Schema for Metadata Store, global tables.
+-- @brief LSST Database Schema for Metadata Store, global tables.
+--
+-- @author Jacek Becla, SLAC
 
 
 CREATE TABLE User 
@@ -54,28 +56,26 @@ CREATE TABLE User_Authorization
         -- <descr>Query load limit. Each query will have a "cost"
         -- associated with it. This limit is per hour. -1 = unlimited.
         -- </descr>
-    queryLoadLimit_h INT,
-        -- <descr>Query load limit. Each query will have a "cost"
-        -- associated with it. This limit is per 24h. -1 = unlimited.
-        -- </descr>
+    INDEX IDX_UserAuth_userId(userId)
 ) ENGINE = InnoDB;
 
 
-CREATE TABLE Group
+CREATE TABLE Groups
    -- <descr>Basic information about every group.</descr>
 (
-    groupId INT NOT NULL,
+    groupId INT NOT NULL AUTO_INCREMENT,
         -- <descr>Unique identifier.</descr>
         -- <ucd>meta.id</ucd>
     groupName VARCHAR(64),
-    PRIMARY KEY Group_groupId(groupId)
+    PRIMARY KEY PK_Group_groupId(groupId)
+
 ) ENGINE = InnoDB;
 
 
 CREATE TABLE Group_Authorization
     -- <descr>Per-group authorization.</descr>
 (
-    groupId INT NOT NULL,
+    groupId INT NOT NULL
         -- <descr>Id of the group for which given authorization is defined.
         -- </descr>
 ) ENGINE = InnoDB;
@@ -88,8 +88,8 @@ CREATE TABLE User_To_Group
         -- <descr>Id of the user.-- </descr>
     groupId INT NOT NULL,
         -- <descr>Id of the group.-- </descr>
-    INDEX IDX_USERTOGROUP_userId(userId),
-    INDEX IDX_USERTOGROUP_groupId(groupId)
+    INDEX IDX_UserToGroup_userId(userId),
+    INDEX IDX_UserToGroup_groupId(groupId)
 ) ENGINE = InnoDB;
 
  
@@ -106,7 +106,7 @@ CREATE TABLE Repo
         -- <descr>Project name, e.g. LSST, SDSS, GAIA</descr>
     repoType ENUM('db', 'butler', 'file', 'custom'),
     dataRelease TINYINT,
-        <descr>Data Release number, if applicable.</descr>
+        -- <descr>Data Release number, if applicable.</descr>
     version VARCHAR(255),
     shortName VARCHAR(255),
     description VARCHAR(255),
@@ -149,8 +149,8 @@ CREATE TABLE RepoAnnotations
     userId INT NOT NULL,
         -- <descr>User who entered given annotation. References entry in
         -- User table.</descr>
-    key VARCHAR(64) NOT NULL,
-    value TEXT NOT NULL,
+    theKey VARCHAR(64) NOT NULL,
+    theValue TEXT NOT NULL,
     INDEX IDX_RepoAnnotations_repoId(repoId),
     INDEX IDX_RepoAnnotations_userId(userId)
 ) ENGINE = InnoDB;
@@ -181,7 +181,7 @@ CREATE TABLE FileRepoTypes
     fileType ENUM('fits', 'config', 'csv', 'tcv', 'custom'),
     fileCount INT,
         -- <descr>Number of files in the repo.</descr>
-    INDEX KEY IDX_FileRepoTypes_repoId(repoId)
+    INDEX IDX_FileRepoTypes_repoId(repoId)
 ) ENGINE = InnoDB;
  
  
