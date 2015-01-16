@@ -105,8 +105,10 @@ CREATE TABLE Repo
     project VARCHAR(64),
         -- <descr>Project name, e.g. LSST, SDSS, GAIA</descr>
     repoType ENUM('db', 'butler', 'file', 'custom'),
-    lsstLevel ENUM ('L1', 'L2', 'L3', 'DC', 'dev'),
-        -- <descr>LSST Level: L1, L2, L3, Data Challenge, devel</descr>
+    lsstLevel ENUM ('DC', 'L1', 'L2', 'L3', 'EFD', 'dev'),
+        -- <descr>Supported levels: DC ('Data Challenge'), L1 ('Level 1 / Alert
+        -- Production'), L2 ('Level 2 / Data Release'), L3 ('Level 3 / User data'),
+        -- EFD ('Observatory Telemetry'), dev ('unclassified development')</descr>
     dataRelease TINYINT,
         -- <descr>Data Release number, if applicable.</descr>
     version VARCHAR(255),

@@ -24,18 +24,23 @@
 
 
 CREATE TABLE DbMeta
-    -- <descr>Information about one file. One row per file.</descr>
+    -- <descr>Information about one database. One row per database.
+    -- There is one:one mapping between repo and database.</descr>
 (
-    dbMetaId INT NOT NULL AUTO_INCREMENT,
-        -- <descr>Unique identifier.</descr>
+    dbMetaId INT,
+        -- <descr>Unique identifier. Matches corresponding repoId from the Repo
+        -- table.</descr>
         -- <ucd>meta.id</ucd>
     dbName VARCHAR(64),
-        -- <descr>The name of the database.</descr>
+        -- <descr>The name of the database. Note that a name must be unique
+        -- across all levels (e.g. if we have "testX" db in "DR1", we can't
+        -- have any other "testX" db in DR2 or L3 etc.)</descr>
     connHost VARCHAR(64),
         -- <descr>Connection information: host.</descr>
     connPort INT,
         -- <descr>Connection information: port.</descr>
-    PRIMARY KEY DbMeta_dbMetaId(dbMetaId)
+    PRIMARY KEY DbMeta_dbMetaId(dbMetaId),
+    UNIQUE IDX_DbMeta_dbName(dbName)
 ) ENGINE=InnoDB;
  
 
