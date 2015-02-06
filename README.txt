@@ -10,7 +10,7 @@ sudo aptitude install python-flask
   ./tests/reinit.sh
 
   # run the server
-  python server.py
+  python bin/metaServer.py
 
   # and fetch the urls:
   http://localhost:5000/meta

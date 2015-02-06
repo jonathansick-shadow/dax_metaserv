@@ -24,14 +24,13 @@
 This module implements the RESTful interface for Metadata Service.
 Corresponding URI: /meta
 
-@author  Jacek Becla, SLAC, SLAC
+@author  Jacek Becla, SLAC
 """
 
-# todo: need to properly package Flask
-from flask import Flask
+from flask import Blueprint, Flask
 import MySQLdb
 
-app = Flask(__name__)
+metaREST = Blueprint('metaREST', __name__, template_folder='metaserv')
 
 # connect to database metaServ
 # todo: this will currently fail if metaServ db does not exist
@@ -50,8 +49,6 @@ con = MySQLdb.connect(host=dbHost,
 # todo: known issue: it blocks commands such as "drop database", because
 #       it keeps connection option. Close connection per request?
 
-
-curVerMeta = 0 # version of the API for /meta
 
 def runDbQuery1(query, notFoundMsg):
     '''Runs query that returns one row.'''
@@ -77,25 +74,21 @@ def runDbQueryM(query, notFoundMsg):
     cursor.close()
     return retStr
 
-@app.route('/meta', methods=['GET'])
-def getM():
-    '''Lists supported versions for /meta.'''
-    return "v%d" % curVerMeta
+@metaREST.route('/', methods=['GET'])
+def getRoot():
+    '''Hello, LSST Metadata Service here. Here is a list of types I support:<br />
+db<br />
+image'''
 
-@app.route('/meta/v%d' % curVerMeta, methods=['GET'])
-def getM_curVer():
-    '''Lists types served for current version of meta.'''
-    return "image<br />db"
-
-@app.route('/meta/v%d/db' % curVerMeta, methods=['GET'])
-def getM_db():
+@metaREST.route('/db', methods=['GET'])
+def get_db():
     '''Lists types of databases (that have at least one database).'''
     # todo: this will currently fail if Repo table does not exist
     return runDbQueryM(
         "SELECT DISTINCT lsstLevel FROM Repo WHERE repoType = 'db'",
         "No types with at least one database found.")
 
-@app.route('/meta/v%d/db/<string:lsstLevel>' % curVerMeta, methods=['GET'])
+@metaREST.route('/db/<string:lsstLevel>', methods=['GET'])
 def getM_db_perType(lsstLevel):
     '''Lists databases for a given type.'''
     # todo: this will currently fail if Repo table does not exist
@@ -104,8 +97,7 @@ def getM_db_perType(lsstLevel):
         "WHERE lsstLevel = '%s'" % lsstLevel,
         "No database found.")
 
-@app.route('/meta/v%d/db/<string:lsstLevel>/<string:dbName>' % curVerMeta,
-           methods=['GET'])
+@metaREST.route('/db/<string:lsstLevel>/<string:dbName>', methods=['GET'])
 def getM_db_perType_dbName(lsstLevel, dbName):
     '''Retrieves information about one database.'''
     # We don't use lsstLevel here because db names are unique across all types.
@@ -115,8 +107,7 @@ def getM_db_perType_dbName(lsstLevel, dbName):
         "WHERE dbName = '%s'" % dbName,
         "Database '%s' not found." % dbName)
 
-@app.route('/meta/v%d/db/<string:lsstLevel>/<string:dbName>/tables' % curVerMeta,
-           methods=['GET'])
+@metaREST.route('/db/<string:lsstLevel>/<string:dbName>/tables', methods=['GET'])
 def getM_db_perType_dbName_tables(lsstLevel, dbName):
     '''Lists table names in a given database.'''
     return runDbQueryM(
@@ -124,8 +115,8 @@ def getM_db_perType_dbName_tables(lsstLevel, dbName):
         "WHERE table_schema='%s'" % dbName,
         "No tables found in database '%s'." % dbName)
 
-@app.route('/meta/v%d/db/<string:lsstLevel>/<string:dbName>/tables/' % curVerMeta +
-           '<string:tableName>', methods=['GET'])
+@metaREST.route('/db/<string:lsstLevel>/<string:dbName>/tables/' +
+                '<string:tableName>', methods=['GET'])
 def getM_db_perType_dbName_tables_tableName(lsstLevel, dbName, tableName):
     '''Retrieves information about a table from a given database.'''
     return runDbQuery1(
@@ -133,20 +124,16 @@ def getM_db_perType_dbName_tables_tableName(lsstLevel, dbName, tableName):
         "WHERE dbName='%s' AND tableName='%s'" % (dbName, tableName),
         "Table '%s.%s'not found." % (dbName, tableName))
 
-@app.route('/meta/v%d/db/<string:lsstLevel>/<string:dbName>/' % curVerMeta +
-           'tables/<string:tableName>/schema', methods=['GET'])
+@metaREST.route('/db/<string:lsstLevel>/<string:dbName>/' +
+                'tables/<string:tableName>/schema', methods=['GET'])
 def getM_db_perType_dbName_tables_tableName_schema(lsstLevel, dbName, tableName):
     '''Retrieves schema for a given table.'''
     return runDbQuery1(
         "SHOW CREATE TABLE %s.%s" % (dbName, tableName),
         "Table '%s.%s'not found." % (dbName, tableName))
 
-@app.route('/meta/v%d/image' % curVerMeta, methods=['GET'])
+@metaREST.route('/image', methods=['GET'])
 def getM_image():
     return ("meta/.../image not implemented. I am supposed to print list of " 
             "supported image types here, something like: raw, template, coadd, "
             "jpeg, calexp, ... etc")
-
-##### Main #########################################################################
-if __name__ == '__main__':
-    app.run(debug=True)
