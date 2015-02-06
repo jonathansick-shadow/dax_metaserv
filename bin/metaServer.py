@@ -29,7 +29,7 @@ Web Service, e.g., through webserv/bin/server.py
 """
 
 from flask import Flask
-import metaREST
+from lsst.metaserv import metaREST
 
 app = Flask(__name__)
 
