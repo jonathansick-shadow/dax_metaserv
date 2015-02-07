@@ -81,7 +81,7 @@ db<br />
 image'''
 
 @metaREST.route('/db', methods=['GET'])
-def get_db():
+def getDb():
     '''Lists types of databases (that have at least one database).'''
     # todo: this will currently fail if Repo table does not exist
     return runDbQueryM(
@@ -89,7 +89,7 @@ def get_db():
         "No types with at least one database found.")
 
 @metaREST.route('/db/<string:lsstLevel>', methods=['GET'])
-def getM_db_perType(lsstLevel):
+def getDbPerType(lsstLevel):
     '''Lists databases for a given type.'''
     # todo: this will currently fail if Repo table does not exist
     return runDbQueryM(
@@ -98,7 +98,7 @@ def getM_db_perType(lsstLevel):
         "No database found.")
 
 @metaREST.route('/db/<string:lsstLevel>/<string:dbName>', methods=['GET'])
-def getM_db_perType_dbName(lsstLevel, dbName):
+def getDbPerTypeDbName(lsstLevel, dbName):
     '''Retrieves information about one database.'''
     # We don't use lsstLevel here because db names are unique across all types.
     return runDbQuery1(
@@ -108,7 +108,7 @@ def getM_db_perType_dbName(lsstLevel, dbName):
         "Database '%s' not found." % dbName)
 
 @metaREST.route('/db/<string:lsstLevel>/<string:dbName>/tables', methods=['GET'])
-def getM_db_perType_dbName_tables(lsstLevel, dbName):
+def getDbPerTypeDbNameTables(lsstLevel, dbName):
     '''Lists table names in a given database.'''
     return runDbQueryM(
         "SELECT table_name FROM information_schema.tables "
@@ -117,7 +117,7 @@ def getM_db_perType_dbName_tables(lsstLevel, dbName):
 
 @metaREST.route('/db/<string:lsstLevel>/<string:dbName>/tables/' +
                 '<string:tableName>', methods=['GET'])
-def getM_db_perType_dbName_tables_tableName(lsstLevel, dbName, tableName):
+def getDbPerTypeDbNameTablesTableName(lsstLevel, dbName, tableName):
     '''Retrieves information about a table from a given database.'''
     return runDbQuery1(
         "SELECT DDT_Table.* FROM DDT_Table JOIN DbMeta USING (dbMetaId) "
@@ -126,14 +126,14 @@ def getM_db_perType_dbName_tables_tableName(lsstLevel, dbName, tableName):
 
 @metaREST.route('/db/<string:lsstLevel>/<string:dbName>/' +
                 'tables/<string:tableName>/schema', methods=['GET'])
-def getM_db_perType_dbName_tables_tableName_schema(lsstLevel, dbName, tableName):
+def getDbPerTypeDbNameTablesTableNameSchema(lsstLevel, dbName, tableName):
     '''Retrieves schema for a given table.'''
     return runDbQuery1(
         "SHOW CREATE TABLE %s.%s" % (dbName, tableName),
         "Table '%s.%s'not found." % (dbName, tableName))
 
 @metaREST.route('/image', methods=['GET'])
-def getM_image():
+def getImage():
     return ("meta/.../image not implemented. I am supposed to print list of " 
             "supported image types here, something like: raw, template, coadd, "
             "jpeg, calexp, ... etc")
