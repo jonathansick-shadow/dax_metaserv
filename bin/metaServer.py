@@ -29,11 +29,20 @@ Web Service, e.g., through webserv/bin/server.py
 """
 
 from flask import Flask
-from lsst.metaserv import metaREST
+from lsst.metaserv import metaREST_v0
 
 app = Flask(__name__)
 
-app.register_blueprint(metaREST.metaREST, url_prefix='/meta/v0')
+@app.route('/')
+def getRoot():
+    return 'Test server for testing metadata. Try adding /meta to URI.'
+
+@app.route('/meta')
+def getMeta():
+    '''Lists supported versions for /meta.'''
+    return 'v0'
+
+app.register_blueprint(metaREST_v0.metaREST, url_prefix='/meta/v0')
 
 if __name__ == '__main__':
     app.run(debug=True)

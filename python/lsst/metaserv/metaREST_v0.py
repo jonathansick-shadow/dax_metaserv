@@ -76,9 +76,11 @@ def runDbQueryM(query, notFoundMsg):
 
 @metaREST.route('/', methods=['GET'])
 def getRoot():
-    '''Hello, LSST Metadata Service here. Here is a list of types I support:<br />
-db<br />
-image'''
+    return '''
+Hello, LSST Metadata Service here. Here is a list of types I support:<br />
+  db<br />
+  image<br />
+'''
 
 @metaREST.route('/db', methods=['GET'])
 def getDb():
