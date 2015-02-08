@@ -1,5 +1,6 @@
 setupRequired(db)
 setupRequired(flask)
+setupRequired(log)
 setupRequired(mysqlpython)
 
 envPrepend(LD_LIBRARY_PATH, ${PRODUCT_DIR}/lib)

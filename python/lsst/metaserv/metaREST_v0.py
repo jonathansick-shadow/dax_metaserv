@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 
 # LSST Data Management System
 # Copyright 2015 AURA/LSST.
@@ -25,30 +25,32 @@ This module implements the RESTful interface for Metadata Service.
 Corresponding URI: /meta
 
 @author  Jacek Becla, SLAC
+
+# todo: known issue: it blocks commands such as "drop database", because
+#       it keeps connection option. Close connection per request?
 """
 
 from flask import Blueprint, Flask
 import MySQLdb
 
+from lsst.db.utils import readCredentialFile
+import lsst.log as log
+
+
 metaREST = Blueprint('metaREST', __name__, template_folder='metaserv')
 
-# connect to database metaServ
-# todo: this will currently fail if metaServ db does not exist
-# todo: db connection and credentials need to be handled better
-dbHost = "localhost"
-dbPort = 3306
-dbUser="becla"
-dbPass = ""
-dbName = "metaServ"
-con = MySQLdb.connect(host=dbHost, 
-                      port=dbPort,
-                      user=dbUser,
-                      passwd=dbPass,
-                      db=dbName)
+# connect to the metaserv database
+creds = readCredentialFile("~/.lsst/dbAuth-metaServ.txt", log)
+try:
+    con = MySQLdb.connect(host=creds['host'],
+                          port=int(creds['port']),
+                          user=creds['user'],
+                          passwd=creds['passwd'],
+                          db=creds['db'])
 
-# todo: known issue: it blocks commands such as "drop database", because
-#       it keeps connection option. Close connection per request?
-
+except MySQLdb.Error as err:
+    log.info("ERROR MySQL %s", err)
+    raise
 
 def runDbQuery1(query, optTuple=None, notFoundMsg='Not found'):
     '''Runs query that returns one row.'''
@@ -85,9 +87,7 @@ def runDbQueryM(query, optTuple=None, notFoundMsg='Not found'):
 @metaREST.route('/', methods=['GET'])
 def getRoot():
     return '''
-Hello, LSST Metadata Service here. Here is a list of types I support:<br />
-  db<br />
-  image<br />
+LSST Metadata Service here. I currently support: /db and image.
 '''
 
 @metaREST.route('/db', methods=['GET'])
