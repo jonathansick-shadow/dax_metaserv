@@ -50,27 +50,35 @@ con = MySQLdb.connect(host=dbHost,
 #       it keeps connection option. Close connection per request?
 
 
-def runDbQuery1(query, notFoundMsg):
+def runDbQuery1(query, optTuple=None, notFoundMsg='Not found'):
     '''Runs query that returns one row.'''
     cursor = con.cursor()
-    cursor.execute(query)
+    if optTuple:
+        cursor.execute(query, optTuple)
+    else:
+        cursor.execute(query)
     row = cursor.fetchone()
     if not row:
         retStr = notFoundMsg
-    retStr = ''
-    for x in range(0, len(row)):
-        retStr += "%s: %s<br />" % (cursor.description[x][0], row[x])
+    else:
+        retStr = ''
+        for x in range(0, len(row)):
+            retStr += "%s: %s<br />" % (cursor.description[x][0], row[x])
     cursor.close()
     return retStr
 
-def runDbQueryM(query, notFoundMsg):
+def runDbQueryM(query, optTuple=None, notFoundMsg='Not found'):
     '''Runs query that returns many rows.'''
     cursor = con.cursor()
-    cursor.execute(query)
+    if optTuple:
+        cursor.execute(query, optTuple)
+    else:
+        cursor.execute(query)
     rows = cursor.fetchall()
     if len(rows) == 0:
         retStr = notFoundMsg
-    retStr = "<br />".join(str(r[0]) for r in rows)
+    else:
+        retStr = "<br />".join(str(r[0]) for r in rows)
     cursor.close()
     return retStr
 
@@ -88,6 +96,7 @@ def getDb():
     # todo: this will currently fail if Repo table does not exist
     return runDbQueryM(
         "SELECT DISTINCT lsstLevel FROM Repo WHERE repoType = 'db'",
+        None,
         "No types with at least one database found.")
 
 @metaREST.route('/db/<string:lsstLevel>', methods=['GET'])
@@ -96,7 +105,8 @@ def getDbPerType(lsstLevel):
     # todo: this will currently fail if Repo table does not exist
     return runDbQueryM(
         "SELECT dbName FROM Repo JOIN DbMeta on (repoId=dbMetaId) "
-        "WHERE lsstLevel = '%s'" % lsstLevel,
+        "WHERE lsstLevel = %s",
+        (lsstLevel,),
         "No database found.")
 
 @metaREST.route('/db/<string:lsstLevel>/<string:dbName>', methods=['GET'])
@@ -106,7 +116,8 @@ def getDbPerTypeDbName(lsstLevel, dbName):
     return runDbQuery1(
         "SELECT Repo.*, DbMeta.* "
         "FROM Repo JOIN DbMeta on (repoId=dbMetaId) "
-        "WHERE dbName = '%s'" % dbName,
+        "WHERE dbName = %s",
+        (dbName,),
         "Database '%s' not found." % dbName)
 
 @metaREST.route('/db/<string:lsstLevel>/<string:dbName>/tables', methods=['GET'])
@@ -114,7 +125,8 @@ def getDbPerTypeDbNameTables(lsstLevel, dbName):
     '''Lists table names in a given database.'''
     return runDbQueryM(
         "SELECT table_name FROM information_schema.tables "
-        "WHERE table_schema='%s'" % dbName,
+        "WHERE table_schema= %s ",
+        (dbName,),
         "No tables found in database '%s'." % dbName)
 
 @metaREST.route('/db/<string:lsstLevel>/<string:dbName>/tables/' +
@@ -123,7 +135,8 @@ def getDbPerTypeDbNameTablesTableName(lsstLevel, dbName, tableName):
     '''Retrieves information about a table from a given database.'''
     return runDbQuery1(
         "SELECT DDT_Table.* FROM DDT_Table JOIN DbMeta USING (dbMetaId) "
-        "WHERE dbName='%s' AND tableName='%s'" % (dbName, tableName),
+        "WHERE dbName=%s AND tableName=%s",
+        (dbName, tableName),
         "Table '%s.%s'not found." % (dbName, tableName))
 
 @metaREST.route('/db/<string:lsstLevel>/<string:dbName>/' +
@@ -131,7 +144,8 @@ def getDbPerTypeDbNameTablesTableName(lsstLevel, dbName, tableName):
 def getDbPerTypeDbNameTablesTableNameSchema(lsstLevel, dbName, tableName):
     '''Retrieves schema for a given table.'''
     return runDbQuery1(
-        "SHOW CREATE TABLE %s.%s" % (dbName, tableName),
+        "SHOW CREATE TABLE %s.%s",
+        (dbName, tableName),
         "Table '%s.%s'not found." % (dbName, tableName))
 
 @metaREST.route('/image', methods=['GET'])
