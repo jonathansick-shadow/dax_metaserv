@@ -28,6 +28,7 @@ Corresponding URI: /meta
 
 # todo: known issue: it blocks commands such as "drop database", because
 #       it keeps connection option. Close connection per request?
+# todo: migrate to db, and use execCommands etc from there.
 """
 
 from flask import Blueprint, Flask
@@ -144,8 +145,11 @@ def getDbPerTypeDbNameTablesTableName(lsstLevel, dbName, tableName):
 def getDbPerTypeDbNameTablesTableNameSchema(lsstLevel, dbName, tableName):
     '''Retrieves schema for a given table.'''
     return runDbQuery1(
-        "SHOW CREATE TABLE %s.%s",
-        (dbName, tableName),
+        # TODO: fixme, this does not work, because it binds to
+        # SHOW CREATE TABLE 'x'.'y', which mysql rejects
+        #"SHOW CREATE TABLE %s.%s", (dbName, tableName,),
+        "SHOW CREATE TABLE %s.%s" % (dbName, tableName),
+        None,
         "Table '%s.%s'not found." % (dbName, tableName))
 
 @metaREST.route('/image', methods=['GET'])

@@ -8,6 +8,9 @@ sudo aptitude install python-flask
 
   # load the metaserv schema and load some dummy data
   ./tests/reinit.sh
+  ./tests.reinit.py
+  ./bin/metaServBackend.py regDb DC_W13_Stripe82 L2
+  ./bin/metaServBackend.py regDb jacek_1mRows L3
 
   # run the server
   python bin/metaServer.py
@@ -16,8 +19,6 @@ sudo aptitude install python-flask
   http://localhost:5000/meta
   http://localhost:5000/meta/v0
   http://localhost:5000/meta/v0/db
-  http://localhost:5000/meta/v0/db/L3
-  http://localhost:5000/meta/v0/db/L3/jacek_db1x
-  http://localhost:5000/meta/v0/db/L3/jacek_db1x/tables
-  http://localhost:5000/meta/v0/db/L3/jacek_db1x/tables/Object
-  http://localhost:5000/meta/v0/db/L3/jacek_db1x/tables/Source/schema
+  http://localhost:5000/meta/v0/db/L2
+  http://127.0.0.1:5000/meta/v0/db/L2/DC_W13_Stripe82/tables
+  http://127.0.0.1:5000/meta/v0/db/L2/DC_W13_Stripe82/tables/Science_Ccd_Exposure/schema
