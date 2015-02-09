@@ -16,9 +16,16 @@ sudo aptitude install python-flask
   python bin/metaServer.py
 
   # and fetch the urls:
-  http://localhost:5000/meta
-  http://localhost:5000/meta/v0
-  http://localhost:5000/meta/v0/db
-  http://localhost:5000/meta/v0/db/L2
-  http://127.0.0.1:5000/meta/v0/db/L2/DC_W13_Stripe82/tables
-  http://127.0.0.1:5000/meta/v0/db/L2/DC_W13_Stripe82/tables/Science_Ccd_Exposure/schema
+  curl http://localhost:5000/meta
+  curl http://localhost:5000/meta/v0
+  curl http://localhost:5000/meta/v0/db
+  curl http://localhost:5000/meta/v0/db/L2
+  curl http://127.0.0.1:5000/meta/v0/db/L2/DC_W13_Stripe82/tables
+  curl http://127.0.0.1:5000/meta/v0/db/L2/DC_W13_Stripe82/tables/Science_Ccd_Exposure/schema
+
+  curl -H accept:text/html http://localhost:5000/meta
+  curl -H accept:text/html http://localhost:5000/meta/v0
+  curl -H accept:text/html http://localhost:5000/meta/v0/db
+  curl -H accept:text/html http://localhost:5000/meta/v0/db/L2
+  curl -H accept:text/html http://127.0.0.1:5000/meta/v0/db/L2/DC_W13_Stripe82/tables
+  curl -H accept:text/html http://127.0.0.1:5000/meta/v0/db/L2/DC_W13_Stripe82/tables/Science_Ccd_Exposure/schema

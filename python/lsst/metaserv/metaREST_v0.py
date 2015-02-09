@@ -22,16 +22,20 @@
 
 """
 This module implements the RESTful interface for Metadata Service.
-Corresponding URI: /meta
+Corresponding URI: /meta. Default output format is json. Currently
+supported formats: json and html.
 
 @author  Jacek Becla, SLAC
 
-# todo: known issue: it blocks commands such as "drop database", because
-#       it keeps connection option. Close connection per request?
-# todo: migrate to db, and use execCommands etc from there.
+# todos:
+#  * known issue: it blocks commands such as "drop database", because
+#    it keeps connection option. Close connection per request?
+#  * migrate to db, and use execCommands etc from there.
+#  * generate proper html header
 """
 
-from flask import Blueprint, Flask
+from flask import Blueprint, Flask, request
+import json
 import MySQLdb
 
 from lsst.db.utils import readCredentialFile
@@ -61,12 +65,18 @@ def runDbQuery1(query, optTuple=None, notFoundMsg='Not found'):
     else:
         cursor.execute(query)
     row = cursor.fetchone()
+    fmt = request.accept_mimetypes.best_match(['application/json', 'text/html'])
     if not row:
         retStr = notFoundMsg
     else:
         retStr = ''
         for x in range(0, len(row)):
-            retStr += "%s: %s<br />" % (cursor.description[x][0], row[x])
+            if fmt == "text/html":
+                retStr += "%s: %s<br />" % (cursor.description[x][0], row[x])
+            else: # default format is application/json
+                retStr += "%s:%s " % (cursor.description[x][0], row[x])
+        if fmt == "application/json":
+            retStr = json.dumps(retStr)
     cursor.close()
     return retStr
 
@@ -78,17 +88,21 @@ def runDbQueryM(query, optTuple=None, notFoundMsg='Not found'):
     else:
         cursor.execute(query)
     rows = cursor.fetchall()
+    fmt = request.accept_mimetypes.best_match(['application/json', 'text/html'])
     if len(rows) == 0:
         retStr = notFoundMsg
     else:
-        retStr = "<br />".join(str(r[0]) for r in rows)
+        if fmt == 'text/html':
+            retStr = "<br />".join(str(r[0]) for r in rows)
+        else: # default format is application/json
+            ret = " ".join(str(r[0]) for r in rows)
+            retStr = json.dumps(ret)
     cursor.close()
     return retStr
 
 @metaREST.route('/', methods=['GET'])
 def getRoot():
-    return '''
-LSST Metadata Service here. I currently support: /db and image.
+    return '''LSST Metadata Service v0 here. I currently support: /db and image.
 '''
 
 @metaREST.route('/db', methods=['GET'])
