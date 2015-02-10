@@ -102,8 +102,11 @@ def runDbQueryM(query, optTuple=None, notFoundMsg='Not found'):
 
 @metaREST.route('/', methods=['GET'])
 def getRoot():
-    return '''LSST Metadata Service v0 here. I currently support: /db and image.
-'''
+    fmt = request.accept_mimetypes.best_match(['application/json', 'text/html'])
+    if fmt == 'text/html':
+        return ("LSST Metadata Service v0 here. I currently support: "
+                "<a href='db'>/db</a> and <a href='image'>/image</a>.")
+    return "LSST Metadata Service v0 here. I currently support: /db and /image."
 
 @metaREST.route('/db', methods=['GET'])
 def getDb():
