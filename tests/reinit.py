@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 
 from lsst.db.db import Db, DbException
-from lsst.db.utils import readCredentialFile
-import lsst.log as log
 
 queries = (
 '''INSERT INTO User(userId, mysqlUserName, firstName, lastName, affiliation) VALUES
@@ -30,7 +28,7 @@ queries = (
   (6, 'john_tmpDb5')''',
 
 '''INSERT INTO DDT_Table(tableId, dbMetaId, tableName, descr) VALUES
-  (1, 5, 'Object',     'my object table'),
+  (1, 5, 'Object',     'my object tablexx'),
   (2, 5, 'Source',     'source table'),
   (3, 6, 'DeepSource', 'deep src')''',
 
@@ -48,13 +46,13 @@ queries = (
   (11, 'flags',  3, 'my flags',          '',            '')'''
 )
 
-creds = readCredentialFile("~/.lsst/dbAuth-metaServ.txt", log)
+db = Db(read_default_file="~/.lsst/dbAuth-metaServ.txt")
 
-db = Db(user=creds["user"],
-        host=creds["host"],
-        port=int(creds["port"]),
-        passwd=creds["passwd"],
-        db=creds["db"])
-
+db.dropDb("metaServ_core", mustExist=False)
+db.createDb("metaServ_core")
+db.loadSqlScript("sql/global.sql")
+db.loadSqlScript("sql/dbRepo.sql")
+db.loadSqlScript("sql/fileRepo.sql")
+db.useDb("metaServ_core")
 for q in queries:
     db.execCommand0(q)
