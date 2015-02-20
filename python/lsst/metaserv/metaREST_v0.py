@@ -34,13 +34,12 @@ supported formats: json and html.
 #  * generate proper html header
 """
 
-from flask import Blueprint, Flask, request
+from flask import Blueprint, request
 import json
 import MySQLdb
 
 from lsst.db.utils import readCredentialFile
 import lsst.log as log
-
 
 metaREST = Blueprint('metaREST', __name__, template_folder='metaserv')
 
@@ -52,7 +51,6 @@ try:
                           user=creds['user'],
                           passwd=creds['passwd'],
                           db=creds['db'])
-
 except MySQLdb.Error as err:
     log.info("ERROR MySQL %s", err)
     raise
@@ -162,15 +160,12 @@ def getDbPerTypeDbNameTablesTableName(lsstLevel, dbName, tableName):
 def getDbPerTypeDbNameTablesTableNameSchema(lsstLevel, dbName, tableName):
     '''Retrieves schema for a given table.'''
     return runDbQuery1(
-        # TODO: fixme, this does not work, because it binds to
-        # SHOW CREATE TABLE 'x'.'y', which mysql rejects
-        #"SHOW CREATE TABLE %s.%s", (dbName, tableName,),
         "SHOW CREATE TABLE %s.%s" % (dbName, tableName),
         None,
         "Table '%s.%s'not found." % (dbName, tableName))
 
 @metaREST.route('/image', methods=['GET'])
 def getImage():
-    return ("meta/.../image not implemented. I am supposed to print list of " 
+    return ("meta/.../image not implemented. I am supposed to print list of "
             "supported image types here, something like: raw, template, coadd, "
             "jpeg, calexp, ... etc")
