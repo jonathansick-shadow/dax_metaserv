@@ -9,8 +9,8 @@ sudo aptitude install python-flask
   # load the metaserv schema and load some dummy data
   ./tests/reinit.sh
   ./tests.reinit.py
-  ./bin/metaServBackend.py regDb DC_W13_Stripe82 L2
-  ./bin/metaServBackend.py regDb jacek_1mRows L3
+  ./bin/metaBackend.py regDb DC_W13_Stripe82 L2
+  ./bin/metaBackend.py regDb jacek_1mRows L3
 
   # run the server
   python bin/metaServer.py
