@@ -28,21 +28,30 @@ Web Service, e.g., through webserv/bin/server.py
 @author  Jacek Becla, SLAC
 """
 
-from flask import Flask
+from flask import Flask, request
 from lsst.metaserv import metaREST_v0
+import json
 
 app = Flask(__name__)
 
 @app.route('/')
 def getRoot():
-    return '''Test server for testing metadata. Try adding /meta to URI.
+    fmt = request.accept_mimetypes.best_match(['application/json', 'text/html'])
+    s = '''Test server for testing metadata. Try adding /meta to URI.
 '''
+    if fmt == "text/html":
+        return s
+    return json.dumps(s)
 
 @app.route('/meta')
 def getMeta():
     '''Lists supported versions for /meta.'''
-    return '''v0
+    fmt = request.accept_mimetypes.best_match(['application/json', 'text/html'])
+    s = '''v0
 '''
+    if fmt == "text/html":
+        return s
+    return json.dumps(s)
 
 app.register_blueprint(metaREST_v0.metaREST, url_prefix='/meta/v0')
 
