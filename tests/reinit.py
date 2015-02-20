@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from lsst.db.db import Db, DbException
+from lsst.db.db import Db
 
 queries = (
 '''INSERT INTO User(userId, mysqlUserName, firstName, lastName, affiliation) VALUES
