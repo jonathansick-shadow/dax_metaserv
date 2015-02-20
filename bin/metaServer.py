@@ -21,14 +21,14 @@
 # see <http://www.lsstcorp.org/LegalNotices/>.
 
 """
-This is a program for running RESTful LSST Metadata Server (only). 
-Use it for tests. It is really meant to run as part of the central 
+This is a program for running RESTful LSST Metadata Server (only).
+Use it for tests. It is really meant to run as part of the central
 Web Service, e.g., through webserv/bin/server.py
 
 @author  Jacek Becla, SLAC
 """
 
-from flask import Flask, request
+from flask import Flask
 from lsst.metaserv import metaREST_v0
 
 app = Flask(__name__)

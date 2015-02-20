@@ -21,28 +21,22 @@
 # see <http://www.lsstcorp.org/LegalNotices/>.
 
 """
-This is a program for ingesting information into LSST Metadata Server. 
+This is a program for ingesting information into LSST Metadata Server.
 
 @author  Jacek Becla, SLAC
 """
 
-from lsst.db.db import Db, DbException
+from lsst.db.db import Db
 from lsst.db.utils import readCredentialFile
 import lsst.log as log
 import sys
 
-creds = readCredentialFile("~/.lsst/dbAuth-metaServ.txt", log)
-
-db = Db(user=creds["user"],
-        host=creds["host"],
-        port=int(creds["port"]),
-        passwd=creds["passwd"],
-        db=creds["db"])
+db = Db(read_default_file="~/.lsst/dbAuth-metaServ.txt")
 
 def registerDb(dbName, level, projectName='LSST'):
     if not db.dbExists(dbName):
         log.error("Db not found")
-        return
+        sys.exit(1)
     cmd = "INSERT INTO Repo(url, project, repoType, lsstLevel, shortName, owner) "
     cmd += "VALUES('/dummy', '%s', 'db', '%s', '%s', 0) " % \
         (projectName, level, dbName)
@@ -52,7 +46,7 @@ def registerDb(dbName, level, projectName='LSST'):
     cmd += "VALUES(%s, '%s')" % (theId, dbName)
     db.execCommand0(cmd)
 
-    tables = db.listTables(dbName)     
+    tables = db.listTables(dbName)
     for t in tables:
         cmd = "INSERT INTO DDT_Table(dbMetaId, tableName) "
         cmd += "VALUES(%s, '%s')" % (theId, t)
@@ -61,7 +55,7 @@ def registerDb(dbName, level, projectName='LSST'):
 if __name__ == '__main__':
     if len(sys.argv) != 4:
         print "Expecting 3 args"
-        exit(-1)
+        sys.exit(2)
     theCmd = sys.argv[1]
     dbName = sys.argv[2]
     level = sys.argv[3]
@@ -70,4 +64,4 @@ if __name__ == '__main__':
         registerDb(dbName, level)
     else:
         print 'Unsupported command. I support: regDb, [more coming soon]'
-        exit(-2)
+        sys.exit(3)
