@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 # LSST Data Management System
 # Copyright 2015 AURA/LSST.
 #
@@ -145,7 +143,7 @@ def getDbPerTypeDbNameTables(lsstLevel, dbName):
         (dbName,),
         "No tables found in database '%s'." % dbName)
 
-@metaREST.route('/db/<string:lsstLevel>/<string:dbName>/tables/' +
+@metaREST.route('/db/<string:lsstLevel>/<string:dbName>/tables/'
                 '<string:tableName>', methods=['GET'])
 def getDbPerTypeDbNameTablesTableName(lsstLevel, dbName, tableName):
     '''Retrieves information about a table from a given database.'''
