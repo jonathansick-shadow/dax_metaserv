@@ -31,6 +31,7 @@ Web Service, e.g., through webserv/bin/server.py
 from flask import Flask, request
 from lsst.metaserv import metaREST_v0
 import json
+import sys
 
 app = Flask(__name__)
 
