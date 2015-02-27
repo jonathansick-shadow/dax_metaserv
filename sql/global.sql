@@ -1,6 +1,6 @@
 -- LSST Data Management System
 -- Copyright 2014-2015 AURA/LSST.
--- 
+--
 -- This product includes software developed by the
 -- LSST Project (http://www.lsst.org/).
 --
@@ -8,14 +8,14 @@
 -- it under the terms of the GNU General Public License as published by
 -- the Free Software Foundation, either version 3 of the License, or
 -- (at your option) any later version.
--- 
+--
 -- This program is distributed in the hope that it will be useful,
 -- but WITHOUT ANY WARRANTY; without even the implied warranty of
 -- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 -- GNU General Public License for more details.
--- 
--- You should have received a copy of the LSST License Statement and 
--- the GNU General Public License along with this program.  If not, 
+--
+-- You should have received a copy of the LSST License Statement and
+-- the GNU General Public License along with this program.  If not,
 -- see <https://www.lsstcorp.org/LegalNotices/>.
 
 -- @brief LSST Database Schema for Metadata Store, global tables.
@@ -23,8 +23,8 @@
 -- @author Jacek Becla, SLAC
 
 
-CREATE TABLE User 
-    -- <descr>Basic information about every registered user. This is 
+CREATE TABLE User
+    -- <descr>Basic information about every registered user. This is
     -- a global table, (there is only one in the entire Metadata Store).
     -- Credentials are handled separately. Ultimately this will be managed
     -- through LDAP.</descr>
@@ -92,7 +92,7 @@ CREATE TABLE User_To_Group
     INDEX IDX_UserToGroup_groupId(groupId)
 ) ENGINE = InnoDB;
 
- 
+
 CREATE TABLE Repo
     -- <descr>Information about repositories, one row per repo.
     -- A repository can be a database, a directory with files.
@@ -142,7 +142,7 @@ CREATE TABLE Repo
     PRIMARY KEY repo_repoId(repoId)
 ) ENGINE = InnoDB;
 
- 
+
 CREATE TABLE RepoAnnotations
     -- <descr>Annotations for entries in Repo, in key-value form.
     -- This is a global table, (there is only one in the entire Metadata Store).
@@ -158,28 +158,28 @@ CREATE TABLE RepoAnnotations
     INDEX IDX_RepoAnnotations_repoId(repoId),
     INDEX IDX_RepoAnnotations_userId(userId)
 ) ENGINE = InnoDB;
- 
- 
+
+
 CREATE TABLE FileRepo
     -- <descr>Information about file repositories. One row per file repo.
     -- This is a global table, (there is only one in the entire Metadata Store).
     -- </descr>
-( 
+(
     repoId INT,
         -- <descr>References an entry in Repo.</descr>
 
     -- can't think of things to put in there right now, but I am sure
     -- we will identify these things...
- 
+
     PRIMARY KEY FileRepo_repoId(repoId)
 ) ENGINE = InnoDB;
- 
- 
+
+
 CREATE TABLE FileRepoTypes
-    -- <descr>Information about types of files in a file repository. 
+    -- <descr>Information about types of files in a file repository.
     -- This is a global table, (there is only one in the entire Metadata Store).
     -- </descr>
-( 
+(
     repoId INT,
         -- <descr>References an entry in FileRepo.</descr>
     fileType ENUM('fits', 'config', 'csv', 'tcv', 'custom'),
@@ -187,7 +187,7 @@ CREATE TABLE FileRepoTypes
         -- <descr>Number of files in the repo.</descr>
     INDEX IDX_FileRepoTypes_repoId(repoId)
 ) ENGINE = InnoDB;
- 
- 
- 
+
+
+
 -- FileRepoAnnotations, similar to RepoAnnotations goes here...
