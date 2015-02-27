@@ -68,9 +68,6 @@ class SchemaToMeta(object):
         in_colDescr = None
         table = {}
 
-        dbDescr_file = None
-        dbDescr_rev = None
-
         tableStart = re.compile(r'CREATE TABLE (\w+)*')
         tableEnd = re.compile(r"\)")
         engineLine = re.compile(r'\) (ENGINE|TYPE)=(\w+)*;')
@@ -79,7 +76,6 @@ class SchemaToMeta(object):
         descrEnd = re.compile(r'</descr>')
         unitStart = re.compile(r'<unit>')
         unitEnd = re.compile(r'</unit>')
-        zzDbDescrF = re.compile(r'INSERT INTO ZZZ_Db_Description\(f\) VALUES\(\'([\w.]+)')
 
         colNum = 1
 
@@ -171,11 +167,6 @@ class SchemaToMeta(object):
                                           # ucds
                         if self._isUcdLine(line):
                             in_col["ucd"] = self._retrUcd(line)
-
-            elif zzDbDescrF.match(line): # process "INSERT INTO ZZZ_Db_Description"
-                m = zzDbDescrF.search(line)
-                dbDescr_file = m.group(1)
-                dbDescr_rev = commands.getoutput("git describe --dirty")
 
         iF.close()
         return table
