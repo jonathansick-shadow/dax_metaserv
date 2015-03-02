@@ -31,22 +31,42 @@ CREATE TABLE User
 (
     userId INT NOT NULL AUTO_INCREMENT,
         -- <descr>Unique identifier.</descr>
-        -- <ucd>meta.id</ucd>
     mysqlUserName VARCHAR(64),
         -- <descr>MySQL user name.</descr>
     firstName VARCHAR(64),
     lastName VARCHAR(64),
-    affiliation VARCHAR(64),
-    PRIMARY KEY User_userId(userId)
+    email VARCHAR(64),
+    instId INT,
+        -- <descr>Id of the institution the user is affiliated with.</descr>
+    PRIMARY KEY PK_User_userId(userId),
+    UNIQUE UQ_User_mysqlUserName(mysqlUserName)
 ) ENGINE = InnoDB;
 
+CREATE TABLE Institution
+    -- <descr>Institutions.</descr>
+(
+    instId INT NOT NULL AUTO_INCREMENT,
+        -- <descr>Unique identifier.</descr>
+    instName VARCHAR(64),
+    PRIMARY KEY PK_Institution_instId(instId),
+    UNIQUE UQ_Institution_instName(instName)
+) ENGINE = InnoDB;
+
+CREATE TABLE Project
+    -- <descr>Projects, for which we have data sets tracked by metaserv</descr>
+(
+    projectId INT NOT NULL AUTO_INCREMENT,
+        -- <descr>Unique identifier.</descr>
+    projectName VARCHAR(64),
+    PRIMARY KEY PK_Project_projectId(projectId),
+    UNIQUE UQ_Project_projectName(projectName)
+) ENGINE = InnoDB;
 
 CREATE TABLE User_Authorization
     -- <descr>Per-user authorization.</descr>
 (
     userId INT NOT NULL,
-        -- <descr>Id of the user for who given authorization is defined.
-        -- </descr>
+        -- <descr>Id of the user for who given authorization is defined.</descr>
     accessLevel ENUM('default', 'admin'),
     dbLimit INT,
         -- <descr>Database storage limit, in GB.</descr>
@@ -65,7 +85,6 @@ CREATE TABLE Groups
 (
     groupId INT NOT NULL AUTO_INCREMENT,
         -- <descr>Unique identifier.</descr>
-        -- <ucd>meta.id</ucd>
     groupName VARCHAR(64),
     PRIMARY KEY PK_Group_groupId(groupId)
 
@@ -102,20 +121,21 @@ CREATE TABLE Repo
     repoId INT NOT NULL AUTO_INCREMENT,
     url VARCHAR(255),
         -- <descr>Virtual location.</descr>
-    project VARCHAR(64),
-        -- <descr>Project name, e.g. LSST, SDSS, GAIA</descr>
+    projectId INT,
+        -- <descr>Id of the project this data set comes from. References an entry
+        -- in the Project table.</descr>
     repoType ENUM('db', 'butler', 'file', 'custom'),
-    lsstLevel ENUM ('DC', 'L1', 'L2', 'L3', 'EFD', 'dev'),
+    lsstLevel ENUM ('DC', 'L1', 'L2', 'L3', 'dev'),
         -- <descr>Supported levels: DC ('Data Challenge'), L1 ('Level 1 / Alert
         -- Production'), L2 ('Level 2 / Data Release'), L3 ('Level 3 / User data'),
-        -- EFD ('Observatory Telemetry'), dev ('unclassified development')</descr>
-    dataRelease TINYINT,
-        -- <descr>Data Release number, if applicable.</descr>
+        -- dev ('unclassified development')</descr>
+    dataRelease VARCHAR(64),
+        -- <descr>Data Release, if applicable.</descr>
     version VARCHAR(255),
     shortName VARCHAR(255),
     description VARCHAR(255),
-    owner INT,
-        -- <descr> references entry in User table</descr>
+    ownerId INT,
+        -- <descr>References entry in User table</descr>
     checksum VARCHAR(128),
     createTime DATETIME,
     ingestTime DATETIME,
@@ -124,7 +144,7 @@ CREATE TABLE Repo
     availability ENUM('loading', 'published', 'notPublished', 'locked4Maintenance'),
         -- <descr>I am sure there are many more states we can come up
         -- with.</descr>
-    accessibility ENUM('public', 'private'),
+    accessibility ENUM('public', 'private', 'unreleased'),
         -- <descr>If we want to do in that direction, we'd need to cover
         -- group access too.</descr>
     onDisk BOOL,
