@@ -89,6 +89,8 @@ CREATE TABLE DDT_Column
     tableId INT NOT NULL,
         -- <descr>References entry in DDT_Table - table where this column
         -- belongs.</descr>
+    ordinalPosition BIGINT UNSIGNED NOT NULL,
+        -- <descr>Value of ORDINAL_POSITION from information_schema.COLUMNS.</descr>
     descr TEXT,
         -- <descr>Column description.</descr>
     ucd VARCHAR(1024),

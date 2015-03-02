@@ -1,16 +1,9 @@
-# Useful link:
-http://blog.miguelgrinberg.com/post/designing-a-restful-api-with-python-and-flask
-
-# To install flask:
-sudo aptitude install python-flask
-
 # To run some quick tests:
 
-  # load the metaserv schema and load some dummy data
-  ./tests/reinit.sh
-  ./tests.reinit.py
-  ./bin/metaBackend.py regDb DC_W13_Stripe82 L2
-  ./bin/metaBackend.py regDb jacek_1mRows L3
+  # load the metaserv schema and load some data
+  # note, examples/quickTest requires cat module checked out in ../ directory
+  ./bin/resetDb.sh
+  ./bin/metaBackend.py < examples/quickTest
 
   # run the server
   python bin/metaServer.py

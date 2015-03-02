@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-
 #
 # LSST Data Management System
 # Copyright 2008-2015 LSST Corporation.
@@ -20,7 +19,6 @@
 # You should have received a copy of the LSST License Statement and
 # the GNU General Public License along with this program.  If not,
 # see <http://www.lsstcorp.org/LegalNotices/>.
-#
 
 
 import commands
@@ -79,19 +77,15 @@ class SchemaToMeta(object):
 
         colNum = 1
 
-        tableNumber = 1000 # just for hashing, not really needed by schema browser
-
         iF = open(self._inFName, mode='r')
         for line in iF:
             # print "processing ", line
             m = tableStart.search(line)
             if m is not None:
                 tableName = m.group(1)
-                table[tableNumber] = {}
-                table[tableNumber]["name"] = tableName
+                table[tableName] = {}
                 colNum = 1
-                in_table = table[tableNumber]
-                tableNumber += 1
+                in_table = table[tableName]
                 in_col = None
                 #print "Found table ", in_table
             elif tableEnd.match(line):
@@ -273,5 +267,5 @@ def printIt():
     pp = pprint.PrettyPrinter(indent=2)
     pp.pprint(t)
 
-if __name__ == '__main__':
-    printIt()
+#if __name__ == '__main__':
+#    printIt()
