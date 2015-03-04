@@ -29,9 +29,11 @@ Web Service, e.g., through webserv/bin/server.py
 """
 
 from flask import Flask, request
-from lsst.metaserv import metaREST_v0
 import json
+import logging as log
 import sys
+
+from lsst.metaserv import metaREST_v0
 
 app = Flask(__name__)
 
@@ -57,8 +59,13 @@ def getMeta():
 app.register_blueprint(metaREST_v0.metaREST, url_prefix='/meta/v0')
 
 if __name__ == '__main__':
+    log.basicConfig(
+        format='%(asctime)s %(name)s %(levelname)s: %(message)s',
+        datefmt='%m/%d/%Y %I:%M:%S',
+        level=log.DEBUG)
+
     try:
-        app.run(debug=True
+        app.run(debug=True)
     except Exception, e:
         print "Problem starting the server.", str(e)
         sys.exit(1)
