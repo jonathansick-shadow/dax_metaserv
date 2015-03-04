@@ -34,33 +34,17 @@ supported formats: json and html.
 
 from flask import Blueprint, request
 import json
-import MySQLdb
 
-from lsst.db.utils import readCredentialFile
-import lsst.log as log
+from lsst.db.db import Db
 
 metaREST = Blueprint('metaREST', __name__, template_folder='metaserv')
 
 # connect to the metaserv database
-creds = readCredentialFile("~/.lsst/dbAuth-metaServ.txt", log)
-try:
-    con = MySQLdb.connect(host=creds['host'],
-                          port=int(creds['port']),
-                          user=creds['user'],
-                          passwd=creds['passwd'],
-                          db=creds['db'])
-except MySQLdb.Error as err:
-    log.info("ERROR MySQL %s", err)
-    raise
+db = Db(read_default_file="~/.lsst/dbAuth-metaServ.txt")
 
-def runDbQuery1(query, optTuple=None, notFoundMsg='Not found'):
+def runDbQuery1(query, optParams=None, notFoundMsg='Not found'):
     '''Runs query that returns one row.'''
-    cursor = con.cursor()
-    if optTuple:
-        cursor.execute(query, optTuple)
-    else:
-        cursor.execute(query)
-    row = cursor.fetchone()
+    row = db.execCommand1(query, optParams)
     fmt = request.accept_mimetypes.best_match(['application/json', 'text/html'])
     if not row:
         retStr = notFoundMsg
@@ -73,17 +57,11 @@ def runDbQuery1(query, optTuple=None, notFoundMsg='Not found'):
                 retStr += "%s:%s " % (cursor.description[x][0], row[x])
         if fmt == "application/json":
             retStr = json.dumps(retStr)
-    cursor.close()
     return retStr
 
-def runDbQueryM(query, optTuple=None, notFoundMsg='Not found'):
+def runDbQueryM(query, optParams=None, notFoundMsg='Not found'):
     '''Runs query that returns many rows.'''
-    cursor = con.cursor()
-    if optTuple:
-        cursor.execute(query, optTuple)
-    else:
-        cursor.execute(query)
-    rows = cursor.fetchall()
+    rows = db.execCommandN(query, optParams)
     fmt = request.accept_mimetypes.best_match(['application/json', 'text/html'])
     if len(rows) == 0:
         retStr = notFoundMsg
@@ -93,7 +71,6 @@ def runDbQueryM(query, optTuple=None, notFoundMsg='Not found'):
         else: # default format is application/json
             ret = " ".join(str(r[0]) for r in rows)
             retStr = json.dumps(ret)
-    cursor.close()
     return retStr
 
 @metaREST.route('/', methods=['GET'])
