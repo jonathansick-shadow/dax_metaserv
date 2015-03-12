@@ -21,7 +21,7 @@
 # see <http://www.lsstcorp.org/LegalNotices/>.
 
 """
-Metadata Server client program. It is currently used to ingest information into the
+Metadata Server admin program. It is currently used to ingest information into the
 LSST Metadata Server.
 
 @author  Jacek Becla, SLAC
@@ -39,9 +39,9 @@ from lsst.metaserv.schemaToMeta import SchemaToMeta
 from lsst.metaserv.metaBException import MetaBException
 
 
-class MetaBackend(object):
+class MetaAdminImpl(object):
     """
-    Implements the guts of the metaserver backend."
+    Implements the guts of the metaserver admin program."
     """
 
     def __init__(self, msMysqlAuthF):
@@ -49,7 +49,7 @@ class MetaBackend(object):
         @param msMysqlAuthF  mysql auth file for metaserv db and metaserv user
         """
         self._msMysqlAuthF = msMysqlAuthF
-        self._log = log.getLogger("lsst.metaserv.backend")
+        self._log = log.getLogger("lsst.metaserv.admin")
 
     def addDbDescr(self, dbName, schemaFile, level, dataRel, owner,
                    accessibility, projectName, dbMysqlAuthF):
@@ -272,7 +272,7 @@ class MetaBackend(object):
 ####################################################################################
 class CommandParser(object):
     """
-    Parse commands and calls appropriate function from metaBackend.
+    Parse commands and calls appropriate function from MetaAdminImpl
     """
 
     def __init__(self, msAuthFileName):
@@ -289,7 +289,7 @@ class CommandParser(object):
             'HELP':       self._printHelp,
             'QUIT':       self._justExit
             }
-        self._impl = MetaBackend(msAuthFileName)
+        self._impl = MetaAdminImpl(msAuthFileName)
         self._supportedCommands = """
   Supported commands:
 
@@ -476,10 +476,10 @@ def getOptions():
 """
 
 NAME
-        metaBackend - the client program for managing MetaServ backend
+        metaAdmin - the admin program for managing MetaServ backend
 
 SYNOPSIS
-        metaBackend [OPTIONS]
+        metaAdmin [OPTIONS]
 
 OPTIONS
    -v

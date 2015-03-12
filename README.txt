@@ -12,7 +12,7 @@
   # load the metaserv schema and load some data
   # note, examples/quickTest requires cat module checked out in ../ directory
   ./bin/resetDb_dev.sh
-  ./bin/metaBackend.py < examples/quickTest
+  ./bin/metaAdmin.py < examples/quickTest
 
   # run the server
   ./bin/metaServer.py
