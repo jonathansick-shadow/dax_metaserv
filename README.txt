@@ -1,12 +1,21 @@
 # To run some quick tests:
 
+  # setup the metaserv module for use
+  setup -k -r .
+
+  # identify mysql server to use, and appropriete mysql account, the server
+  # should be up and running
+
+  # prepare mysql auth files ~/.lsst/dbAuth-dbServ.txt and ~/.lsst/dbAuth-metaServ.txt
+  # an example can be found in bin/resetDb.sh
+
   # load the metaserv schema and load some data
   # note, examples/quickTest requires cat module checked out in ../ directory
-  ./bin/resetDb.sh
+  ./bin/resetDb_dev.sh
   ./bin/metaBackend.py < examples/quickTest
 
   # run the server
-  python bin/metaServer.py
+  ./bin/metaServer.py
 
   # and fetch the urls:
   curl http://localhost:5000/meta
