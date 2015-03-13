@@ -30,7 +30,6 @@ here is primarily responsible for parsing arguments.
 
 import logging as log
 from optparse import OptionParser
-import re
 import sys
 
 from lsst.metaserv.metaAdminImpl import MetaAdminImpl
@@ -150,7 +149,7 @@ class CommandParser(object):
             line = raw_input(prompt).decode("utf-8").strip()
             cmd += line + ' '
             prompt = "metab > " if line.endswith(';') else "~ "
-            while re.search(';', cmd):
+            while ';' in cmd:
                 pos = cmd.index(';')
                 try:
                     self._parse(cmd[:pos])
