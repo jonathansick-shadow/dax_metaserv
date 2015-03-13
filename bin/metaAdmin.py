@@ -206,28 +206,28 @@ class CommandParser(object):
         l = len(tokens)
         if l == 1:
             # tokens[0] = name
-             self._impl.addInstitution(tokens[0])
+            self._impl.addInstitution(tokens[0])
         else:
-             raise MetaBException(MetaBException.BAD_CMD,
-                                  "Unexpected number of arguments.")
+            raise MetaBException(MetaBException.BAD_CMD,
+                                 "Unexpected number of arguments.")
 
     def _parseAddProject(self, tokens):
         l = len(tokens)
         if l == 1:
             # tokens[0] = name
-             self._impl.addProject(tokens[0])
+            self._impl.addProject(tokens[0])
         else:
-             raise MetaBException(MetaBException.BAD_CMD,
-                                  "Unexpected number of arguments.")
+            raise MetaBException(MetaBException.BAD_CMD,
+                                 "Unexpected number of arguments.")
 
     def _parseAddUser(self, tokens):
         l = len(tokens)
         if l == 5:
             # tokens[0:5] = muName, fName, lName, affil, email
-             self._impl.addUser(*tokens[0:5])
+            self._impl.addUser(*tokens[0:5])
         else:
-             raise MetaBException(MetaBException.BAD_CMD,
-                                  "Unexpected number of arguments.")
+            raise MetaBException(MetaBException.BAD_CMD,
+                                 "Unexpected number of arguments.")
 
     def _justExit(self, tokens):
         raise SystemExit()
