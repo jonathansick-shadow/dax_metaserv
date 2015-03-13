@@ -22,7 +22,6 @@
 
 
 import commands
-import optparse
 import os
 import pprint
 import re
