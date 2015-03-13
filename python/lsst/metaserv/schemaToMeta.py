@@ -89,10 +89,6 @@ class SchemaToMeta(object):
         tableEnd = re.compile(r"\)")
         engineLine = re.compile(r'\) (ENGINE|TYPE)=(\w+)*;')
         columnLine = re.compile(r'[\s]+(\w+) ([\w\(\)]+)')
-        descrStart = re.compile(r'<descr>')
-        descrEnd = re.compile(r'</descr>')
-        unitStart = re.compile(r'<unit>')
-        unitEnd = re.compile(r'</unit>')
 
         colNum = 1
 
