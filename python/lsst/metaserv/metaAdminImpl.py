@@ -195,10 +195,10 @@ class MetaAdminImpl(object):
 
         # Finally, save things in the MetaServ database
         cmd = "INSERT INTO Repo(url, projectId, repoType, lsstLevel, dataRelease, "
-        cmd += "version, shortName, description, ownerId) "
-        cmd += "VALUES('/dummy',%s,'db',%s,%s,%s,%s,%s,%s) "
+        cmd += "version, shortName, description, ownerId, accessibility) "
+        cmd += "VALUES('/dummy',%s,'db',%s,%s,%s,%s,%s,%s,%s) "
         opts = (str(projectId), level, dataRel, schemaVersion, dbName, schemaDescr,
-                str(ownerId))
+                str(ownerId), accessibility)
         db.execCommand0(cmd, opts)
         repoId = db.execCommand1("SELECT LAST_INSERT_ID()")[0]
         cmd = "INSERT INTO DbMeta(dbMetaId, dbName, connHost, connPort) "

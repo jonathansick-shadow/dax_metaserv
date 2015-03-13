@@ -144,7 +144,7 @@ CREATE TABLE Repo
     availability ENUM('loading', 'published', 'notPublished', 'locked4Maintenance'),
         -- <descr>I am sure there are many more states we can come up
         -- with.</descr>
-    accessibility ENUM('public', 'private'),
+    accessibility ENUM('public', 'private', 'unreleased'),
         -- <descr>If we want to do in that direction, we'd need to cover
         -- group access too.</descr>
     onDisk BOOL,
