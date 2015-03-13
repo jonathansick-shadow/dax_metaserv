@@ -192,7 +192,7 @@ class SchemaToMeta(object):
         return c in ["PRIMARY", "KEY", "INDEX", "UNIQUE"]
 
     def _isCommentLine(self, str):
-        return re.match('[\s]*--', str) is not None
+        return re.match(r'\s*--', str) is not None
 
     def _isUnitLine(self, str):
         return re.search(r'<unit>(.+)</unit>', str) is not None
@@ -222,24 +222,24 @@ class SchemaToMeta(object):
         return x.group(1)
 
     def _retrDescrStart(self, str):
-        xx = re.compile('<descr>(.+)')
+        xx = re.compile(r'<descr>(.+)')
         x = xx.search(str)
         return x.group(1)
 
     def _retrDescrMid(self, str):
-        xx = re.compile('[\s]*--(.+)')
+        xx = re.compile(r'\s*--(.+)')
         x = xx.search(str)
         return x.group(1)
 
     def _retrDescrEnd(self, str):
-        if re.search('-- </descr>', str):
+        if re.search(r'-- </descr>', str):
             return ''
-        xx = re.compile('[\s]*--(.+)</descr>')
+        xx = re.compile(r'\s*--(.+)</descr>')
         x = xx.search(str)
         return x.group(1)
 
     def _retrIsNotNull(self, str):
-        if re.search('NOT NULL', str):
+        if re.search(r'NOT NULL', str):
             return '1'
         return '0'
 
@@ -251,7 +251,7 @@ class SchemaToMeta(object):
         return t
 
     def _retrDefaultValue(self, str):
-        if re.search(' DEFAULT ', str) is None:
+        if re.search(r' DEFAULT ', str) is None:
             return None
         arr = str.split()
         returnNext = 0
@@ -269,7 +269,7 @@ class SchemaToMeta(object):
     # "    UNIQUE UQ_x(xx DESC, yy),"
 
     def _retrColumns(self, str):
-        xx = re.search('[\s\w_]+\(([\w ,]+)\)', str.rstrip())
+        xx = re.search(r'[\s\w_]+\(([\w ,]+)\)', str.rstrip())
         xx = xx.group(1).split() # skip " ASC", " DESC" etc
         s = ''
         for x in xx:
