@@ -154,8 +154,7 @@ class CommandParser(object):
                 try:
                     self._parse(cmd[:pos])
                 except (MetaBException) as e:
-                    log.error(e.__str__())
-                    print "ERROR: ", e.__str__()
+                    log.error("%s", e)
                 cmd = cmd[pos+1:]
 
     def _parse(self, cmd):
