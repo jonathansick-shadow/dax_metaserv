@@ -169,8 +169,8 @@ class MetaAdminImpl(object):
         # pp.pprint(theTable)
 
         # Get host/port from authFile
-        dict = readCredentialFile(dbMysqlAuthF, self._log)
-        (host, port) = [dict[k] for k in ('host', 'port')]
+        hpDict = readCredentialFile(dbMysqlAuthF, self._log)
+        (host, port) = [hpDict[k] for k in ('host', 'port')]
 
         # Now, we will be talking to the metaserv database, so change
         # connection as needed
