@@ -123,9 +123,7 @@ class SchemaToMeta(object):
                         idxInfo = {"type" : t,
                                    "columns" : self._retrColumns(line)
                                }
-                        if "indexes" not in in_table:
-                            in_table["indexes"] = []
-                        in_table["indexes"].append(idxInfo)
+                        in_table.setdefault("indexes", []).append(idxInfo)
                     else:
                         in_col = {"name" : firstWord,
                                   "displayOrder" : str(colNum),
