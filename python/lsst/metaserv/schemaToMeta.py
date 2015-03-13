@@ -59,7 +59,27 @@ class SchemaToMeta(object):
 
 
     def parse(self):
-        """Do actual parsing. Returns the retrieved structure as a table."""
+        """Do actual parsing. Returns the retrieved structure as a table. The
+        structure of the produced table:
+{ <tableName1>: {
+    'columns': [ { 'description': <column description>,
+                   'displayOrder': <value>,
+                   'name': <value>,
+                   'notNull': <value>,
+                   'ord_pos': <value>,
+                   'type': <type> },
+                 # repeated for every column
+               ]
+    'description': <table description>,
+    'engine': <engine>,
+    'indexes': [ { 'columns': <column name>,
+                   'type': <type>},
+                 # repeated for every index
+               ]
+  }
+  # repeated for every table
+}
+"""
         in_table = None
         in_col = None
         in_colDescr = None
