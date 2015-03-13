@@ -192,20 +192,20 @@ class CommandParser(object):
             raise MetaBException(MetaBException.BAD_CMD)
 
     def _parseAddDbDescr(self, tokens):
-        l = len(tokens)
-        if l < 6 or l > 8:
+        length = len(tokens)
+        if length < 6 or length > 8:
             raise MetaBException(MetaBException.BAD_CMD,
                                  "Unexpected number of arguments.")
 
         (dbName, schemaFile, level, dataRel, owner, accessibility) = tokens[0:6]
-        project = (tokens[6] if l > 6 else "LSST")
-        dbMysqlAuthF = (tokens[7] if l > 7 else self._msAuthFileName)
+        project = (tokens[6] if length > 6 else "LSST")
+        dbMysqlAuthF = (tokens[7] if length > 7 else self._msAuthFileName)
         self._impl.addDbDescr(dbName, schemaFile, level, dataRel, owner,
                               accessibility, project, dbMysqlAuthF)
 
     def _parseAddInstitution(self, tokens):
-        l = len(tokens)
-        if l == 1:
+        length = len(tokens)
+        if length == 1:
             # tokens[0] = name
             self._impl.addInstitution(tokens[0])
         else:
@@ -213,8 +213,8 @@ class CommandParser(object):
                                  "Unexpected number of arguments.")
 
     def _parseAddProject(self, tokens):
-        l = len(tokens)
-        if l == 1:
+        length = len(tokens)
+        if length == 1:
             # tokens[0] = name
             self._impl.addProject(tokens[0])
         else:
@@ -222,8 +222,8 @@ class CommandParser(object):
                                  "Unexpected number of arguments.")
 
     def _parseAddUser(self, tokens):
-        l = len(tokens)
-        if l == 5:
+        length = len(tokens)
+        if length == 5:
             # tokens[0:5] = muName, fName, lName, affil, email
             self._impl.addUser(*tokens[0:5])
         else:
