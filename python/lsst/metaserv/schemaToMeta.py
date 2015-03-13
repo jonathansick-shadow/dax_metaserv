@@ -56,6 +56,16 @@ class SchemaToMeta(object):
             sys.exit(1)
         self._inFName = inputFileName
 
+        self._tableStart = re.compile(r'CREATE TABLE (\w+)*')
+        self._tableEnd = re.compile(r"\)")
+        self._engineLine = re.compile(r'\) (ENGINE|TYPE)=(\w+)*;')
+        self._columnLine = re.compile(r'[\s]+(\w+) ([\w\(\)]+)')
+        self._unitLine = re.compile(r'<unit>(.+)</unit>')
+        self._ucdLine = re.compile(r'<ucd>(.+)</ucd>')
+        self._descrLine = re.compile(r'<descr>(.+)</descr>')
+        self._descrStart = re.compile(r'<descr>(.+)')
+        self._descrMiddle = re.compile(r'\s*--(.+)')
+        self._descrEnd = re.compile(r'\s*--(.+)</descr>')
 
     def parse(self):
         """Do actual parsing. Returns the retrieved structure as a table. The
@@ -84,17 +94,12 @@ class SchemaToMeta(object):
         in_colDescr = None
         table = {}
 
-        tableStart = re.compile(r'CREATE TABLE (\w+)*')
-        tableEnd = re.compile(r"\)")
-        engineLine = re.compile(r'\) (ENGINE|TYPE)=(\w+)*;')
-        columnLine = re.compile(r'[\s]+(\w+) ([\w\(\)]+)')
-
         colNum = 1
 
         iF = open(self._inFName, mode='r')
         for line in iF:
             # print "processing ", line
-            m = tableStart.search(line)
+            m = self._tableStart.search(line)
             if m is not None:
                 tableName = m.group(1)
                 table[tableName] = {}
@@ -102,8 +107,8 @@ class SchemaToMeta(object):
                 in_table = table[tableName]
                 in_col = None
                 #print "Found table ", in_table
-            elif tableEnd.match(line):
-                m = engineLine.match(line)
+            elif self._tableEnd.match(line):
+                m = self._engineLine.match(line)
                 if m is not None:
                     engineName = m.group(2)
                     in_table["engine"] = engineName
@@ -111,7 +116,7 @@ class SchemaToMeta(object):
                 # print in_table
                 in_table = None
             elif in_table is not None: # process columns for given table
-                m = columnLine.match(line)
+                m = self._columnLine.match(line)
                 if m is not None:
                     firstWord = m.group(1)
                     if self._isIndexDefinition(firstWord):
@@ -194,13 +199,11 @@ class SchemaToMeta(object):
         return re.search(r'<ucd>(.+)</ucd>', str) is not None
 
     def _retrUnit(self, str):
-        xx = re.compile(r'<unit>(.+)</unit>')
-        x = xx.search(str)
+        x = self._unitLine.search(str)
         return x.group(1)
 
     def _retrUcd(self, str):
-        xx = re.compile(r'<ucd>(.+)</ucd>')
-        x = xx.search(str)
+        x = self._ucdLine.search(str)
         return x.group(1)
 
     def _containsDescrTagStart(self, str):
@@ -210,25 +213,21 @@ class SchemaToMeta(object):
         return re.search(r'</descr>', str) is not None
 
     def _retrDescr(self, str):
-        xx = re.compile(r'<descr>(.+)</descr>')
-        x = xx.search(str)
+        x = self._descrLine.search(str)
         return x.group(1)
 
     def _retrDescrStart(self, str):
-        xx = re.compile(r'<descr>(.+)')
-        x = xx.search(str)
+        x = self._descrStart.search(str)
         return x.group(1)
 
     def _retrDescrMid(self, str):
-        xx = re.compile(r'\s*--(.+)')
-        x = xx.search(str)
+        x = self._descrMiddle.search(str)
         return x.group(1)
 
     def _retrDescrEnd(self, str):
         if re.search(r'-- </descr>', str):
             return ''
-        xx = re.compile(r'\s*--(.+)</descr>')
-        x = xx.search(str)
+        x = self._descrEnd.search(str)
         return x.group(1)
 
     def _retrIsNotNull(self, str):
