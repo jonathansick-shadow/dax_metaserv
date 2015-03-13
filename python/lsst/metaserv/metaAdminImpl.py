@@ -249,8 +249,11 @@ class MetaAdminImpl(object):
         @param name  the name
         """
         db = Db(read_default_file=self._msMysqlAuthF)
-        cmd = "INSERT INTO Institution(instName) VALUES(%s)"
-        db.execCommand0(cmd, (name,))
+        ret = db.execCommand1(
+            "SELECT COUNT(*) FROM Institution WHERE instName=%s", (name,))
+        if ret[0] == 1:
+            raise MetaBException(MetaBException.INST_EXISTS, name)
+        db.execCommand0("INSERT INTO Institution(instName) VALUES(%s)", (name,))
 
     def addProject(self, name):
         """
@@ -259,6 +262,8 @@ class MetaAdminImpl(object):
         @param name  the name
         """
         db = Db(read_default_file=self._msMysqlAuthF)
-        cmd = "INSERT INTO Project(projectName) VALUES(%s)"
-        db.execCommand0(cmd, (name,))
-
+        ret = db.execCommand1(
+            "SELECT COUNT(*) FROM Project WHERE projectName=%s", (name,))
+        if ret[0] == 1:
+            raise MetaBException(MetaBException.PROJECT_EXISTS, name)
+        db.execCommand0("INSERT INTO Project(projectName) VALUES(%s)", (name,))
