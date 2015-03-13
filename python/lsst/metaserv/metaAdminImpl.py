@@ -114,10 +114,7 @@ class MetaAdminImpl(object):
             "TABLE_SCHEMA = %s ORDER BY table_name", (dbName,))
 
         # Count the number of columns in the ascii file
-        nColumns = 0
-
-        for t in theTable:
-            nColumns += len(theTable[t]["columns"])
+        nColumns = sum(len(t["columns"]) for t in theTable.values())
 
         # Check if the number of columns matches
         if nColumns != len(ret):
