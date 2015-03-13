@@ -28,7 +28,7 @@ LSST Metadata Server.
 """
 
 import logging as log
-import pprint
+# import pprint
 import re
 
 from lsst.db.db import Db
@@ -164,7 +164,7 @@ class MetaAdminImpl(object):
         else:
             (schemaVersion, schemaDescr) = ret
 
-        # This can be sometimes handy for debugging
+        # This can be sometimes handy for debugging. (uncomment import too)
         # pp = pprint.PrettyPrinter(indent=2)
         # pp.pprint(theTable)
 
