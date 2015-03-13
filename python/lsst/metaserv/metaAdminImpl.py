@@ -138,19 +138,19 @@ class MetaAdminImpl(object):
                     foundColumn = True
                     c["ord_pos"] = int(ordP)
                     break
-            if not foundColumn:
-                self._log.error(
-                    "Column '%s.%s' not found in db, present in ascii file.",
-                    tName, cName)
-                raise MetaBException(MetaBException.COL_NOT_IN_TB, cName, tName)
+        if not foundColumn:
+            self._log.error(
+                "Column '%s.%s' not found in db, present in ascii file.",
+                tName, cName)
+            raise MetaBException(MetaBException.COL_NOT_IN_TB, cName, tName)
 
         # Check if we covered all columns
         for t in theTable:
             for c in theTable[t]["columns"]:
                 if "ord_pos" not in c:
-                    msg = "Column '%s.%s' not found in " % (tName, cName)
-                    msg += "ascii file, present in db."
-                    self._log.error(msg)
+                    self._log.error(
+                        "Column '%s.%s' not found in ascii file, present in db.",
+                        tName, cName)
                     raise MetaBException(MetaBException.COL_NOT_IN_FL, cName, tName)
 
         # Get schema description and version, it is ok if it is missing
