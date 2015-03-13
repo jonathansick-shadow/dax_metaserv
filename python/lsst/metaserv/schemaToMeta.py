@@ -21,7 +21,6 @@
 # see <http://www.lsstcorp.org/LegalNotices/>.
 
 
-import commands
 import os
 import pprint
 import re
