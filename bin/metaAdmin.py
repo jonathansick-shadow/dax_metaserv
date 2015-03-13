@@ -31,6 +31,7 @@ here is primarily responsible for parsing arguments.
 import logging as log
 from optparse import OptionParser
 import re
+import sys
 
 from lsst.metaserv.metaAdminImpl import MetaAdminImpl
 from lsst.metaserv.metaBException import MetaBException
@@ -230,7 +231,7 @@ class CommandParser(object):
                                  "Unexpected number of arguments.")
 
     def _justExit(self, tokens):
-        raise SystemExit()
+        raise sys.exit()
 
     def _printHelp(self, tokens):
         """
