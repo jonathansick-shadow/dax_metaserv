@@ -1,6 +1,6 @@
 -- LSST Data Management System
 -- Copyright 2014-2015 AURA/LSST.
--- 
+--
 -- This product includes software developed by the
 -- LSST Project (http://www.lsst.org/).
 --
@@ -8,14 +8,14 @@
 -- it under the terms of the GNU General Public License as published by
 -- the Free Software Foundation, either version 3 of the License, or
 -- (at your option) any later version.
--- 
+--
 -- This program is distributed in the hope that it will be useful,
 -- but WITHOUT ANY WARRANTY; without even the implied warranty of
 -- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 -- GNU General Public License for more details.
--- 
--- You should have received a copy of the LSST License Statement and 
--- the GNU General Public License along with this program.  If not, 
+--
+-- You should have received a copy of the LSST License Statement and
+-- the GNU General Public License along with this program.  If not,
 -- see <https://www.lsstcorp.org/LegalNotices/>.
 --
 -- @brief LSST Database Schema for Metadata Store, database-repository related.
@@ -42,7 +42,7 @@ CREATE TABLE DbMeta
     PRIMARY KEY DbMeta_dbMetaId(dbMetaId),
     UNIQUE IDX_DbMeta_dbName(dbName)
 ) ENGINE=InnoDB;
- 
+
 
 CREATE TABLE DbMetaAnnotations
     -- <descr>Annotations for entries in DbMeta, in key-value form.-- </descr>
@@ -89,6 +89,8 @@ CREATE TABLE DDT_Column
     tableId INT NOT NULL,
         -- <descr>References entry in DDT_Table - table where this column
         -- belongs.</descr>
+    ordinalPosition BIGINT UNSIGNED NOT NULL,
+        -- <descr>Value of ORDINAL_POSITION from information_schema.COLUMNS.</descr>
     descr TEXT,
         -- <descr>Column description.</descr>
     ucd VARCHAR(1024),

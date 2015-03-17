@@ -1,6 +1,6 @@
 -- LSST Data Management System
 -- Copyright 2014-2015 AURA/LSST.
--- 
+--
 -- This product includes software developed by the
 -- LSST Project (http://www.lsst.org/).
 --
@@ -8,14 +8,14 @@
 -- it under the terms of the GNU General Public License as published by
 -- the Free Software Foundation, either version 3 of the License, or
 -- (at your option) any later version.
--- 
+--
 -- This program is distributed in the hope that it will be useful,
 -- but WITHOUT ANY WARRANTY; without even the implied warranty of
 -- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 -- GNU General Public License for more details.
--- 
--- You should have received a copy of the LSST License Statement and 
--- the GNU General Public License along with this program.  If not, 
+--
+-- You should have received a copy of the LSST License Statement and
+-- the GNU General Public License along with this program.  If not,
 -- see <https://www.lsstcorp.org/LegalNotices/>.
 
 -- @brief LSST Database Schema for Metadata Store, file-repository related.
@@ -57,7 +57,7 @@ CREATE TABLE File
         -- </descr>
     PRIMARY KEY PK_File_fileId(fileId)
 ) ENGINE = InnoDB;
- 
+
 
 CREATE TABLE FileAnnotations
     -- <descr>Annotations for entries in File, in key-value form.-- </descr>
@@ -72,8 +72,8 @@ CREATE TABLE FileAnnotations
     INDEX IDX_FileAnnotations_repoId(fileId),
     INDEX IDX_FileAnnotations_userId(userId)
 ) ENGINE = InnoDB;
- 
- 
+
+
 CREATE TABLE FitsMeta
     -- <descr>FITS-file specific information.</descr>
 (
@@ -134,7 +134,6 @@ CREATE TABLE FitsUnstructuredMeta
 # todo
 #ALTER TABLE FitsKeyValues ADD CONSTRAINT FK_fitsKeyVal_fitsFileId
 #    FOREIGN KEY (fitsFileId) REFERENCES FitsFiles(fitsFileId);
-# 
+#
 #ALTER TABLE FitsPositions ADD CONSTRAINT FK_fitsPos_fitsFileId
 #    FOREIGN KEY (fitsFileId) REFERENCES FitsFiles(fitsFileId);
- 

@@ -1,19 +1,21 @@
-# Useful link:
-http://blog.miguelgrinberg.com/post/designing-a-restful-api-with-python-and-flask
-
-# To install flask:
-sudo aptitude install python-flask
-
 # To run some quick tests:
 
-  # load the metaserv schema and load some dummy data
-  ./tests/reinit.sh
-  ./tests.reinit.py
-  ./bin/metaBackend.py regDb DC_W13_Stripe82 L2
-  ./bin/metaBackend.py regDb jacek_1mRows L3
+  # setup the metaserv module for use
+  setup -k -r .
+
+  # identify mysql server to use, and appropriete mysql account, the server
+  # should be up and running
+
+  # prepare mysql auth files ~/.lsst/dbAuth-dbServ.txt and ~/.lsst/dbAuth-metaServ.txt
+  # an example can be found in bin/resetDb.sh
+
+  # load the metaserv schema and load some data
+  # note, examples/quickTest requires cat module checked out in ../ directory
+  ./bin/resetDb_dev.sh
+  ./bin/metaAdmin.py < examples/quickTest
 
   # run the server
-  python bin/metaServer.py
+  ./bin/metaServer.py
 
   # and fetch the urls:
   curl http://localhost:5000/meta

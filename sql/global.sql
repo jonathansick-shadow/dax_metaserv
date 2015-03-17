@@ -1,6 +1,6 @@
 -- LSST Data Management System
 -- Copyright 2014-2015 AURA/LSST.
--- 
+--
 -- This product includes software developed by the
 -- LSST Project (http://www.lsst.org/).
 --
@@ -8,14 +8,14 @@
 -- it under the terms of the GNU General Public License as published by
 -- the Free Software Foundation, either version 3 of the License, or
 -- (at your option) any later version.
--- 
+--
 -- This program is distributed in the hope that it will be useful,
 -- but WITHOUT ANY WARRANTY; without even the implied warranty of
 -- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 -- GNU General Public License for more details.
--- 
--- You should have received a copy of the LSST License Statement and 
--- the GNU General Public License along with this program.  If not, 
+--
+-- You should have received a copy of the LSST License Statement and
+-- the GNU General Public License along with this program.  If not,
 -- see <https://www.lsstcorp.org/LegalNotices/>.
 
 -- @brief LSST Database Schema for Metadata Store, global tables.
@@ -23,30 +23,50 @@
 -- @author Jacek Becla, SLAC
 
 
-CREATE TABLE User 
-    -- <descr>Basic information about every registered user. This is 
+CREATE TABLE User
+    -- <descr>Basic information about every registered user. This is
     -- a global table, (there is only one in the entire Metadata Store).
     -- Credentials are handled separately. Ultimately this will be managed
     -- through LDAP.</descr>
 (
     userId INT NOT NULL AUTO_INCREMENT,
         -- <descr>Unique identifier.</descr>
-        -- <ucd>meta.id</ucd>
     mysqlUserName VARCHAR(64),
         -- <descr>MySQL user name.</descr>
     firstName VARCHAR(64),
     lastName VARCHAR(64),
-    affiliation VARCHAR(64),
-    PRIMARY KEY User_userId(userId)
+    email VARCHAR(64),
+    instId INT,
+        -- <descr>Id of the institution the user is affiliated with.</descr>
+    PRIMARY KEY PK_User_userId(userId),
+    UNIQUE UQ_User_mysqlUserName(mysqlUserName)
 ) ENGINE = InnoDB;
 
+CREATE TABLE Institution
+    -- <descr>Institutions.</descr>
+(
+    instId INT NOT NULL AUTO_INCREMENT,
+        -- <descr>Unique identifier.</descr>
+    instName VARCHAR(64),
+    PRIMARY KEY PK_Institution_instId(instId),
+    UNIQUE UQ_Institution_instName(instName)
+) ENGINE = InnoDB;
+
+CREATE TABLE Project
+    -- <descr>Projects, for which we have data sets tracked by metaserv</descr>
+(
+    projectId INT NOT NULL AUTO_INCREMENT,
+        -- <descr>Unique identifier.</descr>
+    projectName VARCHAR(64),
+    PRIMARY KEY PK_Project_projectId(projectId),
+    UNIQUE UQ_Project_projectName(projectName)
+) ENGINE = InnoDB;
 
 CREATE TABLE User_Authorization
     -- <descr>Per-user authorization.</descr>
 (
     userId INT NOT NULL,
-        -- <descr>Id of the user for who given authorization is defined.
-        -- </descr>
+        -- <descr>Id of the user for who given authorization is defined.</descr>
     accessLevel ENUM('default', 'admin'),
     dbLimit INT,
         -- <descr>Database storage limit, in GB.</descr>
@@ -65,7 +85,6 @@ CREATE TABLE Groups
 (
     groupId INT NOT NULL AUTO_INCREMENT,
         -- <descr>Unique identifier.</descr>
-        -- <ucd>meta.id</ucd>
     groupName VARCHAR(64),
     PRIMARY KEY PK_Group_groupId(groupId)
 
@@ -92,7 +111,7 @@ CREATE TABLE User_To_Group
     INDEX IDX_UserToGroup_groupId(groupId)
 ) ENGINE = InnoDB;
 
- 
+
 CREATE TABLE Repo
     -- <descr>Information about repositories, one row per repo.
     -- A repository can be a database, a directory with files.
@@ -102,20 +121,21 @@ CREATE TABLE Repo
     repoId INT NOT NULL AUTO_INCREMENT,
     url VARCHAR(255),
         -- <descr>Virtual location.</descr>
-    project VARCHAR(64),
-        -- <descr>Project name, e.g. LSST, SDSS, GAIA</descr>
+    projectId INT,
+        -- <descr>Id of the project this data set comes from. References an entry
+        -- in the Project table.</descr>
     repoType ENUM('db', 'butler', 'file', 'custom'),
-    lsstLevel ENUM ('DC', 'L1', 'L2', 'L3', 'EFD', 'dev'),
+    lsstLevel ENUM ('DC', 'L1', 'L2', 'L3', 'dev'),
         -- <descr>Supported levels: DC ('Data Challenge'), L1 ('Level 1 / Alert
         -- Production'), L2 ('Level 2 / Data Release'), L3 ('Level 3 / User data'),
-        -- EFD ('Observatory Telemetry'), dev ('unclassified development')</descr>
-    dataRelease TINYINT,
-        -- <descr>Data Release number, if applicable.</descr>
+        -- dev ('unclassified development')</descr>
+    dataRelease VARCHAR(64),
+        -- <descr>Data Release, if applicable.</descr>
     version VARCHAR(255),
     shortName VARCHAR(255),
     description VARCHAR(255),
-    owner INT,
-        -- <descr> references entry in User table</descr>
+    ownerId INT,
+        -- <descr>References entry in User table</descr>
     checksum VARCHAR(128),
     createTime DATETIME,
     ingestTime DATETIME,
@@ -124,7 +144,7 @@ CREATE TABLE Repo
     availability ENUM('loading', 'published', 'notPublished', 'locked4Maintenance'),
         -- <descr>I am sure there are many more states we can come up
         -- with.</descr>
-    accessibility ENUM('public', 'private'),
+    accessibility ENUM('public', 'private', 'unreleased'),
         -- <descr>If we want to do in that direction, we'd need to cover
         -- group access too.</descr>
     onDisk BOOL,
@@ -142,7 +162,7 @@ CREATE TABLE Repo
     PRIMARY KEY repo_repoId(repoId)
 ) ENGINE = InnoDB;
 
- 
+
 CREATE TABLE RepoAnnotations
     -- <descr>Annotations for entries in Repo, in key-value form.
     -- This is a global table, (there is only one in the entire Metadata Store).
@@ -158,28 +178,28 @@ CREATE TABLE RepoAnnotations
     INDEX IDX_RepoAnnotations_repoId(repoId),
     INDEX IDX_RepoAnnotations_userId(userId)
 ) ENGINE = InnoDB;
- 
- 
+
+
 CREATE TABLE FileRepo
     -- <descr>Information about file repositories. One row per file repo.
     -- This is a global table, (there is only one in the entire Metadata Store).
     -- </descr>
-( 
+(
     repoId INT,
         -- <descr>References an entry in Repo.</descr>
 
     -- can't think of things to put in there right now, but I am sure
     -- we will identify these things...
- 
+
     PRIMARY KEY FileRepo_repoId(repoId)
 ) ENGINE = InnoDB;
- 
- 
+
+
 CREATE TABLE FileRepoTypes
-    -- <descr>Information about types of files in a file repository. 
+    -- <descr>Information about types of files in a file repository.
     -- This is a global table, (there is only one in the entire Metadata Store).
     -- </descr>
-( 
+(
     repoId INT,
         -- <descr>References an entry in FileRepo.</descr>
     fileType ENUM('fits', 'config', 'csv', 'tcv', 'custom'),
@@ -187,7 +207,7 @@ CREATE TABLE FileRepoTypes
         -- <descr>Number of files in the repo.</descr>
     INDEX IDX_FileRepoTypes_repoId(repoId)
 ) ENGINE = InnoDB;
- 
- 
- 
+
+
+
 -- FileRepoAnnotations, similar to RepoAnnotations goes here...
