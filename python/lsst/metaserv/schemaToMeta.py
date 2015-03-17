@@ -193,10 +193,10 @@ class SchemaToMeta(object):
         return re.match(r'\s*--', str) is not None
 
     def _isUnitLine(self, str):
-        return re.search(r'<unit>(.+)</unit>', str) is not None
+        return self._unitLine.search(str) is not None
 
     def _isUcdLine(self, str):
-        return re.search(r'<ucd>(.+)</ucd>', str) is not None
+        return self._ucdLine.search(str) is not None
 
     def _retrUnit(self, str):
         x = self._unitLine.search(str)
@@ -243,7 +243,7 @@ class SchemaToMeta(object):
         return t
 
     def _retrDefaultValue(self, str):
-        if re.search(r' DEFAULT ', str) is None:
+        if ' DEFAULT ' not in str:
             return None
         arr = str.split()
         returnNext = 0
