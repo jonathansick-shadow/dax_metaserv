@@ -34,17 +34,27 @@ supported formats: json and html.
 
 from flask import Blueprint, request
 import json
+import logging as log
 
-from lsst.db.db import Db
+from lsst.db.dbPool import DbPool
 
 metaREST = Blueprint('metaREST', __name__, template_folder='metaserv')
 
-# connect to the metaserv database
-db = Db(read_default_file="~/.lsst/dbAuth-metaServ.txt")
+# Connect to the metaserv database. Note that the metaserv typically runs for
+# a long time, and the connection can timeout if there long period of inactivity.
+# Use the DbPool, which will keep the connection alive.
+dbPool = DbPool()
+dbPool.addConn("c1", read_default_file="~/.lsst/dbAuth-metaServ.txt")
+
 
 def runDbQuery1(query, optParams=None, notFoundMsg='Not found'):
-    '''Runs query that returns one row.'''
-    row = db.execCommand1(query, optParams)
+    '''Runs query that returns one row. It can raise DbException or mysql
+    exception.'''
+    cursor = dbPool.getConn("c1").getCursor()
+    log.debug("Executing '%s', optParams: %s.", query, optParams)
+    cursor.execute(query, optParams)
+    row = cursor.fetchone()
+    log.debug("Got: %s", row)
     fmt = request.accept_mimetypes.best_match(['application/json', 'text/html'])
     if not row:
         retStr = notFoundMsg
@@ -60,8 +70,9 @@ def runDbQuery1(query, optParams=None, notFoundMsg='Not found'):
     return retStr
 
 def runDbQueryM(query, optParams=None, notFoundMsg='Not found'):
-    '''Runs query that returns many rows.'''
-    rows = db.execCommandN(query, optParams)
+    '''Runs query that returns many rows. It can raise DbException or mysql
+    exception.'''
+    rows = dbPool.getConn("c1").execCommandN(query, optParams)
     fmt = request.accept_mimetypes.best_match(['application/json', 'text/html'])
     if len(rows) == 0:
         retStr = notFoundMsg
