@@ -45,16 +45,20 @@ class SchemaToMeta(object):
     (in cat/bin/schema_to_metadata.py).
     """
 
-    _tableStart = re.compile(r'CREATE TABLE (\w+)*')
+    _tableStart = re.compile(r'CREATE TABLE (\w+)')
     _tableEnd = re.compile(r"\)")
-    _engineLine = re.compile(r'\) (ENGINE|TYPE)=(\w+)*;')
-    _columnLine = re.compile(r'[\s]+(\w+) ([\w\(\)]+)')
+    _engineLine = re.compile(r'\)\s*(ENGINE|TYPE)\s*=[\s]*(\w+)\s*;')
+    _columnLine = re.compile(r'\s*(\w+)\s+\w+')
+    _idxCols = re.compile(r'\((.+?)\)')
     _unitLine = re.compile(r'<unit>(.+)</unit>')
     _ucdLine = re.compile(r'<ucd>(.+)</ucd>')
     _descrLine = re.compile(r'<descr>(.+)</descr>')
     _descrStart = re.compile(r'<descr>(.+)')
-    _descrMiddle = re.compile(r'\s*--(.+)')
-    _descrEnd = re.compile(r'\s*--(.+)</descr>')
+    _descrMiddle = re.compile(r'--(.+)')
+    _descrEnd = re.compile(r'--(.+)</descr>')
+    _descrEndEmpty = re.compile(r'-- </descr>')
+    _commandLine = re.compile(r'\s*--')
+    _defaultLine = re.compile(r'\s+DEFAULT\s+(.+?)[\s,]')
 
     def __init__(self, inputFileName):
         """
@@ -71,7 +75,8 @@ class SchemaToMeta(object):
         """Do actual parsing. Returns the retrieved structure as a table. The
         structure of the produced table:
 { <tableName1>: {
-    'columns': [ { 'description': <column description>,
+    'columns': [ { 'defaultValue': <value>,
+                   'description': <column description>,
                    'displayOrder': <value>,
                    'name': <value>,
                    'notNull': <value>,
@@ -100,7 +105,7 @@ class SchemaToMeta(object):
         for line in iF:
             # print "processing ", line
             m = SchemaToMeta._tableStart.search(line)
-            if m is not None:
+            if m is not None and not self._isCommentLine(line):
                 tableName = m.group(1)
                 table[tableName] = {}
                 colNum = 1
@@ -126,7 +131,7 @@ class SchemaToMeta(object):
                         elif firstWord == "UNIQUE":
                             t = "UNIQUE"
                         idxInfo = {"type" : t,
-                                   "columns" : self._retrColumns(line)
+                                   "columns" : self._retrIdxColumns(line)
                                }
                         in_table.setdefault("indexes", []).append(idxInfo)
                     else:
@@ -189,63 +194,61 @@ class SchemaToMeta(object):
     def _isIndexDefinition(self, c):
         return c in ["PRIMARY", "KEY", "INDEX", "UNIQUE"]
 
-    def _isCommentLine(self, str):
-        return re.match(r'\s*--', str) is not None
+    def _isCommentLine(self, theString):
+        return SchemaToMeta._commandLine.match(theString) is not None
 
-    def _isUnitLine(self, str):
-        return SchemaToMeta._unitLine.search(str) is not None
+    def _isUnitLine(self, theString):
+        return SchemaToMeta._unitLine.search(theString) is not None
 
-    def _isUcdLine(self, str):
-        return SchemaToMeta._ucdLine.search(str) is not None
+    def _isUcdLine(self, theString):
+        return SchemaToMeta._ucdLine.search(theString) is not None
 
-    def _retrUnit(self, str):
-        x = SchemaToMeta._unitLine.search(str)
-        return x.group(1)
+    def _retrUnit(self, theString):
+        result = SchemaToMeta._unitLine.search(theString)
+        return result.group(1)
 
-    def _retrUcd(self, str):
-        x = SchemaToMeta._ucdLine.search(str)
-        return x.group(1)
+    def _retrUcd(self, theString):
+        result = SchemaToMeta._ucdLine.search(theString)
+        return result.group(1)
 
-    def _containsDescrTagStart(self, str):
-        return re.search(r'<descr>', str) is not None
+    def _containsDescrTagStart(self, theString):
+        return '<descr>' in theString
 
-    def _containsDescrTagEnd(self, str):
-        return re.search(r'</descr>', str) is not None
+    def _containsDescrTagEnd(self, theString):
+        return '</descr>' in theString
 
-    def _retrDescr(self, str):
-        x = SchemaToMeta._descrLine.search(str)
-        return x.group(1)
+    def _retrDescr(self, theString):
+        result = SchemaToMeta._descrLine.search(theString)
+        return result.group(1)
 
-    def _retrDescrStart(self, str):
-        x = SchemaToMeta._descrStart.search(str)
-        return x.group(1)
+    def _retrDescrStart(self, theString):
+        result = SchemaToMeta._descrStart.search(theString)
+        return result.group(1)
 
-    def _retrDescrMid(self, str):
-        x = SchemaToMeta._descrMiddle.search(str)
-        return x.group(1)
+    def _retrDescrMid(self, theString):
+        result = SchemaToMeta._descrMiddle.search(theString)
+        return result.group(1)
 
-    def _retrDescrEnd(self, str):
-        if re.search(r'-- </descr>', str):
+    def _retrDescrEnd(self, theString):
+        if SchemaToMeta._descrEndEmpty.search(theString):
             return ''
-        x = SchemaToMeta._descrEnd.search(str)
-        return x.group(1)
+        result = SchemaToMeta._descrEnd.search(theString)
+        return result.group(1)
 
-    def _retrIsNotNull(self, str):
-        if re.search(r'NOT NULL', str):
-            return '1'
-        return '0'
+    def _retrIsNotNull(self, theString):
+        return 'NOT NULL' in theString
 
-    def _retrType(self, str):
-        arr = str.split()
+    def _retrType(self, theString):
+        arr = theString.split()
         t = arr[1]
         if t == "FLOAT(0)":
             return "FLOAT"
         return t
 
-    def _retrDefaultValue(self, str):
-        if ' DEFAULT ' not in str:
+    def _retrDefaultValue(self, theString):
+        if not SchemaToMeta._defaultLine.search(theString):
             return None
-        arr = str.split()
+        arr = theString.split()
         returnNext = 0
         for a in arr:
             if returnNext:
@@ -253,28 +256,16 @@ class SchemaToMeta(object):
             if a == 'DEFAULT':
                 returnNext = 1
 
-    # example strings:
-    # "    PRIMARY KEY (id),",
-    # "    KEY IDX_sId (sId ASC),",
-    # "    KEY IDX_d (decl DESC)",
-    # "    UNIQUE UQ_AmpMap_ampName(ampName)"
-    # "    UNIQUE UQ_x(xx DESC, yy),"
-
-    def _retrColumns(self, str):
-        xx = re.search(r'[\s\w_]+\(([\w ,]+)\)', str.rstrip())
-        xx = xx.group(1).split() # skip " ASC", " DESC" etc
-        s = ''
-        for x in xx:
-            if not x == 'ASC' and not x == 'DESC':
-                s += x
-                if x[-1] == ',':
-                    s += ' '
-        return s
+    def _retrIdxColumns(self, theString):
+        colExprs = SchemaToMeta._idxCols.search(theString).group(1).split(',')
+        columns = [" ".join([word for word in expr.split()
+                        if word not in ('ASC', 'DESC')]) for expr in colExprs]
+        return ", ".join(columns)
 
 ###############################################################################
 def printIt():
-    x = SchemaToMeta('/home/becla/dataArchDev/repos/cat/sql/baselineSchema.sql')
-    t = x.parse()
+    sToM = SchemaToMeta('../cat/sql/baselineSchema.sql')
+    t = sToM.parse()
     pp = pprint.PrettyPrinter(indent=2)
     pp.pprint(t)
 
