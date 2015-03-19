@@ -41,6 +41,11 @@ class SchemaToMeta(object):
       - <ucd>...</ucd>
     and saves it in an array.
 
+    Note that the SchemaToMeta expects the input file to be structured in certain
+    way, e.g., it will not parse any sql-compliant structure. A comprehensive
+    set of examples can be found in the tests/testSchemaToMeta.py.
+    In addition, the cat/sql/baselineSchema.py is a good "template".
+
     This code was originally written for schema browser
     (in cat/bin/schema_to_metadata.py).
     """
