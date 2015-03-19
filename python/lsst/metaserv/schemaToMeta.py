@@ -60,9 +60,8 @@ class SchemaToMeta(object):
     _descrLine = re.compile(r'<descr>(.+)</descr>')
     _descrStart = re.compile(r'<descr>(.+)')
     _descrMiddle = re.compile(r'--(.+)')
-    _descrEnd = re.compile(r'--(.+)</descr>')
-    _descrEndEmpty = re.compile(r'-- </descr>')
-    _commandLine = re.compile(r'\s*--')
+    _descrEnd = re.compile(r'--(.*)</descr>')
+    _commentLine = re.compile(r'\s*--')
     _defaultLine = re.compile(r'\s+DEFAULT\s+(.+?)[\s,]')
 
     def __init__(self, inputFileName):
@@ -108,7 +107,6 @@ class SchemaToMeta(object):
 
         iF = open(self._inFName, mode='r')
         for line in iF:
-            # print "processing ", line
             m = SchemaToMeta._tableStart.search(line)
             if m is not None and not self._isCommentLine(line):
                 tableName = m.group(1)
@@ -116,14 +114,11 @@ class SchemaToMeta(object):
                 colNum = 1
                 in_table = table[tableName]
                 in_col = None
-                #print "Found table ", in_table
             elif SchemaToMeta._tableEnd.match(line):
                 m = SchemaToMeta._engineLine.match(line)
                 if m is not None:
                     engineName = m.group(2)
                     in_table["engine"] = engineName
-                # print "end of the table"
-                # print in_table
                 in_table = None
             elif in_table is not None: # process columns for given table
                 m = SchemaToMeta._columnLine.match(line)
@@ -152,7 +147,6 @@ class SchemaToMeta(object):
                         if "columns" not in in_table:
                             in_table["columns"] = []
                         in_table["columns"].append(in_col)
-                    # print "found col: ", in_col
                 elif self._isCommentLine(line): # handle comments
                     if in_col is None:    # table comment
 
@@ -200,7 +194,7 @@ class SchemaToMeta(object):
         return c in ["PRIMARY", "KEY", "INDEX", "UNIQUE"]
 
     def _isCommentLine(self, theString):
-        return SchemaToMeta._commandLine.match(theString) is not None
+        return SchemaToMeta._commentLine.match(theString) is not None
 
     def _isUnitLine(self, theString):
         return SchemaToMeta._unitLine.search(theString) is not None
@@ -209,12 +203,10 @@ class SchemaToMeta(object):
         return SchemaToMeta._ucdLine.search(theString) is not None
 
     def _retrUnit(self, theString):
-        result = SchemaToMeta._unitLine.search(theString)
-        return result.group(1)
+        return SchemaToMeta._unitLine.search(theString).group(1)
 
     def _retrUcd(self, theString):
-        result = SchemaToMeta._ucdLine.search(theString)
-        return result.group(1)
+        return SchemaToMeta._ucdLine.search(theString).group(1)
 
     def _containsDescrTagStart(self, theString):
         return '<descr>' in theString
@@ -223,32 +215,23 @@ class SchemaToMeta(object):
         return '</descr>' in theString
 
     def _retrDescr(self, theString):
-        result = SchemaToMeta._descrLine.search(theString)
-        return result.group(1)
+        return SchemaToMeta._descrLine.search(theString).group(1)
 
     def _retrDescrStart(self, theString):
-        result = SchemaToMeta._descrStart.search(theString)
-        return result.group(1)
+        return SchemaToMeta._descrStart.search(theString).group(1)
 
     def _retrDescrMid(self, theString):
-        result = SchemaToMeta._descrMiddle.search(theString)
-        return result.group(1)
+        return SchemaToMeta._descrMiddle.search(theString).group(1)
 
     def _retrDescrEnd(self, theString):
-        if SchemaToMeta._descrEndEmpty.search(theString):
-            return ''
-        result = SchemaToMeta._descrEnd.search(theString)
-        return result.group(1)
+        return SchemaToMeta._descrEnd.search(theString).group(1).rstrip()
 
     def _retrIsNotNull(self, theString):
         return 'NOT NULL' in theString
 
     def _retrType(self, theString):
-        arr = theString.split()
-        t = arr[1]
-        if t == "FLOAT(0)":
-            return "FLOAT"
-        return t
+        t = theString.split()[1].rstrip(',')
+        return "FLOAT" if t == "FLOAT(0)" else t
 
     def _retrDefaultValue(self, theString):
         if not SchemaToMeta._defaultLine.search(theString):

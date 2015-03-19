@@ -55,7 +55,7 @@ CREATE TABLE t1
     id int,
         -- <descr>the t1.id</descr>
     ra double DEFAULT 1,
-        -- <descr>right ascention</descr>
+        -- <descr>right asc</descr>
         -- <ucd>pos.eq.ra</ucd>
         -- <unit>deg</unit>
     decl double,
@@ -86,37 +86,38 @@ CREATE TABLE t2
         theFile.close()
         x = SchemaToMeta(fName)
         theTable = x.parse()
-        assert(len(theTable) == 2)
-        assert(len(theTable["t1"]["columns"]) == 5)
-        assert(theTable["t1"]["columns"][0]["name"] == "id")
-        assert(theTable["t1"]["columns"][0]["description"] == "the t1.id")
-        assert(theTable["t1"]["columns"][1]["name"] == "ra")
-        assert(theTable["t1"]["columns"][1]["defaultValue"] == "1")
-        assert(theTable["t1"]["columns"][1]["description"] == "right ascention")
-        assert(theTable["t1"]["columns"][1]["ucd"] == "pos.eq.ra")
-        assert(theTable["t1"]["columns"][1]["unit"] == "deg")
-        assert(theTable["t1"]["columns"][2]["name"] == "decl")
-        assert("description" not in theTable["t1"]["columns"][2])
-        assert(theTable["t1"]["columns"][2]["ucd"] == "pos.eq.dec")
-        assert(theTable["t1"]["columns"][2]["unit"] == "deg")
-        assert(theTable["t1"]["columns"][3]["name"] == "s")
-        assert(theTable["t1"]["columns"][3]["defaultValue"] == "'x'")
-        assert(theTable["t1"]["columns"][3]["description"] == "the t1.s")
-        assert("ucd" not in theTable["t1"]["columns"][3])
-        assert(theTable["t1"]["columns"][4]["name"] == "v")
-        assert("description" not in theTable["t1"]["columns"][4])
-        assert("ucd" not in theTable["t1"]["columns"][4])
-        assert(theTable["t1"]["description"] == "This is t1 table.")
-        assert(theTable["t1"]["engine"] == "MyISAM")
-        assert(len(theTable["t1"]["indexes"]) == 2)
-        assert(theTable["t1"]["indexes"][0]["columns"] == "id")
-        assert(theTable["t1"]["indexes"][0]["type"] == "PRIMARY KEY")
-        assert(theTable["t1"]["indexes"][1]["columns"] == "s")
-        assert(theTable["t2"]["description"] == "This is t2 table.")
-        assert(theTable["t2"]["columns"][0]["description"] ==
+        self.assertEqual(len(theTable), 2)
+        self.assertEqual(len(theTable["t1"]["columns"]), 5)
+        self.assertEqual(theTable["t1"]["columns"][0]["name"], "id")
+        self.assertEqual(theTable["t1"]["columns"][0]["description"], "the t1.id")
+        self.assertEqual(theTable["t1"]["columns"][1]["name"], "ra")
+        self.assertEqual(theTable["t1"]["columns"][1]["defaultValue"], "1")
+        self.assertEqual(theTable["t1"]["columns"][1]["description"], "right asc")
+        self.assertEqual(theTable["t1"]["columns"][1]["ucd"], "pos.eq.ra")
+        self.assertEqual(theTable["t1"]["columns"][1]["unit"], "deg")
+        self.assertEqual(theTable["t1"]["columns"][2]["name"], "decl")
+        self.assertTrue("description" not in theTable["t1"]["columns"][2])
+        self.assertEqual(theTable["t1"]["columns"][2]["ucd"], "pos.eq.dec")
+        self.assertEqual(theTable["t1"]["columns"][2]["unit"], "deg")
+        self.assertEqual(theTable["t1"]["columns"][3]["name"], "s")
+        self.assertEqual(theTable["t1"]["columns"][3]["defaultValue"], "'x'")
+        self.assertEqual(theTable["t1"]["columns"][3]["description"], "the t1.s")
+        self.assertTrue("ucd" not in theTable["t1"]["columns"][3])
+        self.assertEqual(theTable["t1"]["columns"][4]["name"], "v")
+        self.assertTrue("description" not in theTable["t1"]["columns"][4])
+        self.assertTrue("ucd" not in theTable["t1"]["columns"][4])
+        self.assertEqual(theTable["t1"]["description"], "This is t1 table.")
+        self.assertEqual(theTable["t1"]["engine"], "MyISAM")
+        self.assertEqual(len(theTable["t1"]["indexes"]), 2)
+        self.assertEqual(theTable["t1"]["indexes"][0]["columns"], "id")
+        self.assertEqual(theTable["t1"]["indexes"][0]["type"], "PRIMARY KEY")
+        self.assertEqual(theTable["t1"]["indexes"][1]["columns"], "s")
+        self.assertEqual(theTable["t2"]["description"], "This is t2 table.")
+        self.assertEqual(theTable["t2"]["columns"][0]["description"],
                "This is a very long description of the t2.id2.")
-        assert(theTable["t2"]["columns"][1]["description"] == "Description for s2.")
-        assert(theTable["t2"]["engine"] == "InnoDB")
+        self.assertEqual(theTable["t2"]["columns"][1]["description"],
+                         "Description for s2.")
+        self.assertEqual(theTable["t2"]["engine"], "InnoDB")
 
 
     def testComments(self):
@@ -148,7 +149,27 @@ CREATE TABLE t3 (
         theFile.close()
         x = SchemaToMeta(fName)
         theTable = x.parse()
-        assert(len(theTable) == 1)
+        self.assertEqual(len(theTable), 1)
+
+
+    def testFloat(self):
+        """
+        Test FLOAT(0)
+        """
+        (fd, fName) = tempfile.mkstemp()
+        theFile = os.fdopen(fd, "w")
+        theFile.write("""
+CREATE TABLE t (
+    f1 FLOAT(0),
+    f2 FLOAT
+);
+""")
+        theFile.close()
+        x = SchemaToMeta(fName)
+        theTable = x.parse()
+        self.assertEqual(len(theTable["t"]["columns"]), 2)
+        self.assertEqual(theTable["t"]["columns"][0]["type"], "FLOAT")
+        self.assertEqual(theTable["t"]["columns"][1]["type"], "FLOAT")
 
 
     def testIndices(self):
@@ -175,16 +196,16 @@ CREATE TABLE t (
         theFile.close()
         x = SchemaToMeta(fName)
         theTable = x.parse()
-        assert(theTable["t"]["indexes"][0]["columns"] == "id")
-        assert(theTable["t"]["indexes"][0]["type"] == "PRIMARY KEY")
-        assert(theTable["t"]["indexes"][1]["columns"] == "sId")
-        assert(theTable["t"]["indexes"][1]["type"] == "-")
-        assert(theTable["t"]["indexes"][2]["columns"] == "decl")
-        assert(theTable["t"]["indexes"][2]["type"] == "-")
-        assert(theTable["t"]["indexes"][3]["columns"] == "ampName")
-        assert(theTable["t"]["indexes"][3]["type"] == "UNIQUE")
-        assert(theTable["t"]["indexes"][4]["columns"] == "xx, yy")
-        assert(theTable["t"]["indexes"][3]["type"] == "UNIQUE")
+        self.assertEqual(theTable["t"]["indexes"][0]["columns"], "id")
+        self.assertEqual(theTable["t"]["indexes"][0]["type"], "PRIMARY KEY")
+        self.assertEqual(theTable["t"]["indexes"][1]["columns"], "sId")
+        self.assertEqual(theTable["t"]["indexes"][1]["type"], "-")
+        self.assertEqual(theTable["t"]["indexes"][2]["columns"], "decl")
+        self.assertEqual(theTable["t"]["indexes"][2]["type"], "-")
+        self.assertEqual(theTable["t"]["indexes"][3]["columns"], "ampName")
+        self.assertEqual(theTable["t"]["indexes"][3]["type"], "UNIQUE")
+        self.assertEqual(theTable["t"]["indexes"][4]["columns"], "xx, yy")
+        self.assertEqual(theTable["t"]["indexes"][3]["type"], "UNIQUE")
 
 
 def main():
