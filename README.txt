@@ -6,11 +6,17 @@
   # identify mysql server to use, and appropriete mysql account, the server
   # should be up and running
 
-  # prepare mysql auth files ~/.lsst/dbAuth-dbServ.txt and ~/.lsst/dbAuth-metaServ.txt
+  # prepare mysql auth file ~/.lsst/dbAuth-metaServ.txt
   # an example can be found in bin/resetDb.sh
 
-  # load the metaserv schema and load some data
+  # create your database, load schema
   # note, examples/quickTest requires cat module checked out in ../ directory
+  mysql --defaults-file=<yourAuth> -e "create database <yourUserName>_metaServ_baselineSchema"
+  mysql --defaults-file=<yourAuth> <yourUserName>_metaServ_baselineSchema < ../cat/sql/baselineSchema.sql
+
+  # edit examples/quickTest and enter yourUserName
+
+  # load the metaserv schema and register that database
   ./bin/resetDb_dev.sh
   ./bin/metaAdmin.py < examples/quickTest
 
