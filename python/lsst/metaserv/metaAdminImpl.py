@@ -147,8 +147,8 @@ class MetaAdminImpl(object):
                 if "ord_pos" not in c:
                     self._log.error(
                         "Column '%s.%s' not found in ascii file, present in db.",
-                        tName, cName)
-                    raise MetaBException(MetaBException.COL_NOT_IN_FL, cName, tName)
+                        t, c)
+                    raise MetaBException(MetaBException.COL_NOT_IN_FL, str(c), str(t))
 
         # Get schema description and version, it is ok if it is missing
         ret = db.execCommand1(
