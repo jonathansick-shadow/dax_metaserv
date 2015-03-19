@@ -33,7 +33,7 @@ import re
 
 from lsst.db.db import Db
 from lsst.db.utils import readCredentialFile
-from lsst.metaserv.schemaToMeta import SchemaToMeta
+from lsst.metaserv.schemaToMeta import parseSchema
 from lsst.metaserv.metaBException import MetaBException
 
 
@@ -104,8 +104,7 @@ class MetaAdminImpl(object):
             raise MetaBException(MetaBException.DB_DOES_NOT_EXIST, dbName)
 
         # Parse the ascii schema file
-        x = SchemaToMeta(schemaFile)
-        theTable = x.parse()
+        theTable = parseSchema(schemaFile)
 
         # Fetch the schema information from the database
         ret = db.execCommandN(
