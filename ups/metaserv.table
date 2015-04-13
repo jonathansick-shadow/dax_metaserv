@@ -1,6 +1,5 @@
 setupRequired(db)
 setupRequired(flask)
-setupRequired(log)
 setupRequired(mysqlpython)
 setupRequired(sconsUtils)
 
