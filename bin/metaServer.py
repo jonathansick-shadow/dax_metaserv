@@ -31,11 +31,32 @@ Web Service, e.g., through webserv/bin/server.py
 from flask import Flask, request
 import json
 import logging as log
+import os
 import sys
+
+import ConfigParser
+import sqlalchemy
+from sqlalchemy.engine.url import URL
 
 from lsst.metaserv import metaREST_v0
 
 app = Flask(__name__)
+
+def initEngine():
+    config = ConfigParser.ConfigParser()
+    defaults_file = os.path.expanduser("~/.lsst/dbAuth-dbServ.txt")
+    config.readfp(open(defaults_file))
+    db_config = dict(config.items("mysql"))
+    # Translate user name
+    db_config["username"] = db_config["user"]
+    del db_config["user"]
+    # SQLAlchemy part
+    url = URL("mysql",**db_config)
+    return sqlalchemy.create_engine(url)
+
+engine = initEngine()
+
+app.config["default_engine"] = engine
 
 @app.route('/')
 def getRoot():
