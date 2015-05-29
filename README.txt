@@ -11,6 +11,8 @@
 
   # create your database, load schema
   # note, examples/quickTest requires cat module checked out in ../ directory
+  # to learn about the structure of the ASCII schema file, refer to
+  # metaserv/ddlStructure.md
   mysql --defaults-file=<yourAuth> -e "create database <yourUserName>_metaServ_baselineSchema"
   mysql --defaults-file=<yourAuth> <yourUserName>_metaServ_baselineSchema < ../cat/sql/baselineSchema.sql
 
