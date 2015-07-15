@@ -1,5 +1,5 @@
 setupRequired(db)
-setupRequired(webservcommon)
+setupRequired(dax_webservcommon)
 setupRequired(anaconda)
 setupRequired(mysqlpython)
 setupRequired(sconsUtils)
