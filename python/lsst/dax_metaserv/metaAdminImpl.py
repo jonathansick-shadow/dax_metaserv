@@ -33,8 +33,8 @@ import re
 
 from lsst.db.db import Db
 from lsst.db.utils import readCredentialFile
-from lsst.metaserv.schemaToMeta import parseSchema
-from lsst.metaserv.metaBException import MetaBException
+from .schemaToMeta import parseSchema
+from .metaBException import MetaBException
 
 
 class MetaAdminImpl(object):
