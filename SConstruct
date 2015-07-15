@@ -1,3 +1,3 @@
 # -*- python -*-
 from lsst.sconsUtils import scripts
-scripts.BasicSConstruct("metaserv")
+scripts.BasicSConstruct("dax_metaserv")
