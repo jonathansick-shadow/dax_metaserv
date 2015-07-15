@@ -28,7 +28,7 @@ supported formats: json and html.
 """
 
 from flask import Blueprint, request, current_app, make_response
-from lsst.dax_webservcommon import renderJsonResponse
+from lsst.dax.webservcommon import renderJsonResponse
 
 from httplib import OK, NOT_FOUND, INTERNAL_SERVER_ERROR
 import json
