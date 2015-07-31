@@ -120,11 +120,12 @@ CREATE TABLE Repo
 (
     repoId INT NOT NULL AUTO_INCREMENT,
     url VARCHAR(255),
-        -- <descr>Virtual location.</descr>
+        -- <descr>Virtual location. For databases this is the URL of the database, for 
+        -- files or directories it is the absolute path (at NCSA)</descr>
     projectId INT,
         -- <descr>Id of the project this data set comes from. References an entry
         -- in the Project table.</descr>
-    repoType ENUM('db', 'butler', 'file', 'custom'),
+    repoType ENUM('db', 'butler', 'file', 'dir', 'custom'),
     lsstLevel ENUM ('DC', 'L1', 'L2', 'L3', 'dev'),
         -- <descr>Supported levels: DC ('Data Challenge'), L1 ('Level 1 / Alert
         -- Production'), L2 ('Level 2 / Data Release'), L3 ('Level 3 / User data'),
@@ -135,13 +136,21 @@ CREATE TABLE Repo
     shortName VARCHAR(255),
     description VARCHAR(255),
     ownerId INT,
-        -- <descr>References entry in User table</descr>
+        -- <descr>References entry in User table, if owned by user</descr>
+    groupId INT,
+        -- <descr>References entry in Group table, if owned by group</descr>
+    registerId INT,
+        -- <descr>User who registered the repo</descr>
     checksum VARCHAR(128),
     createTime DATETIME,
+        -- <descr>Time the Repo was created (if known)</descr>
     ingestTime DATETIME,
+        -- <descr>Time the Repo was ingested (if known)</descr>
+    registrationTime DATETIME,
+        -- <descr>Time the Repo was registered (if known)</descr>
     priorityLevel ENUM('scratch', 'keepShort', 'keepLong'),
         -- <descr>This will be useful when purging.</descr>
-    availability ENUM('loading', 'published', 'notPublished', 'locked4Maintenance'),
+    availability ENUM('loading', 'published', 'notPublished', 'QA', 'locked4Maintenance'),
         -- <descr>I am sure there are many more states we can come up
         -- with.</descr>
     accessibility ENUM('public', 'private', 'unreleased'),
@@ -170,12 +179,12 @@ CREATE TABLE RepoAnnotations
 (
     repoId INT NOT NULL,
         -- <descr>References entry in Repo table.</descr>
-    userId INT NOT NULL,
+    userId INT,
         -- <descr>User who entered given annotation. References entry in
-        -- User table.</descr>
+        -- User table. May be null if annotation was not provided by user</descr>
     theKey VARCHAR(64) NOT NULL,
     theValue TEXT NOT NULL,
-    INDEX IDX_RepoAnnotations_repoId(repoId),
+    PRIMARY KEY (repoId, theKey),
     INDEX IDX_RepoAnnotations_userId(userId)
 ) ENGINE = InnoDB;
 
