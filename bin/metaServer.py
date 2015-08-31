@@ -38,7 +38,7 @@ import ConfigParser
 import sqlalchemy
 from sqlalchemy.engine.url import URL
 
-from lsst.metaserv import metaREST_v0
+from lsst.dax.metaserv import metaREST_v0
 
 app = Flask(__name__)
 
@@ -51,7 +51,7 @@ def initEngine():
     db_config["username"] = db_config["user"]
     del db_config["user"]
     # SQLAlchemy part
-    url = URL("mysql",**db_config)
+    url = URL("mysql", **db_config)
     return sqlalchemy.create_engine(url)
 
 engine = initEngine()
