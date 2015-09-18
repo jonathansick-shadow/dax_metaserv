@@ -31,8 +31,8 @@ import logging as log
 # import pprint
 import re
 
-from lsst.db.db import Db
-from lsst.db.utils import readCredentialFile
+from lsst.db.engineFactory import getEngineFromFile
+from lsst.db import utils
 from .schemaToMeta import parseSchema
 from .metaBException import MetaBException
 
@@ -98,8 +98,8 @@ class MetaAdminImpl(object):
         """
 
         # Connect to the server that has database that is being added
-        db = Db(read_default_file=dbMysqlAuthF)
-        if not db.dbExists(dbName):
+        conn = getEngineFromFile(dbMysqlAuthF).connect()
+        if not utils.dbExists(conn, dbName):
             self._log.error("Db '%s' not found.", dbName)
             raise MetaBException(MetaBException.DB_DOES_NOT_EXIST, dbName)
 
@@ -107,7 +107,7 @@ class MetaAdminImpl(object):
         theTable = parseSchema(schemaFile)
 
         # Fetch the schema information from the database
-        ret = db.execCommandN(
+        ret = conn.execute(
             "SELECT table_name, column_name, ordinal_position "
             "FROM information_schema.COLUMNS WHERE "
             "TABLE_SCHEMA = %s ORDER BY table_name", (dbName,))
@@ -116,13 +116,15 @@ class MetaAdminImpl(object):
         nColumns = sum(len(t["columns"]) for t in theTable.values())
 
         # Check if the number of columns matches
-        if nColumns != len(ret):
+        if nColumns != ret.rowcount:
             self._log.error("Number of columns in ascii file "
-                       "(%d) != number of columns in db (%d)", nColumns, len(ret))
+                    "(%d) != number of columns in db (%d)", nColumns, ret.rowcount)
             raise MetaBException(MetaBException.NOT_MATCHING)
 
+        rows = ret.fetchall()
+
         # Fetch ordinal_positions from information_schema and add it to "theTable"
-        for (tName, cName, ordP) in ret:
+        for (tName, cName, ordP) in rows:
             t = theTable.get(tName, None)
             if not t:
                 self._log.error(
@@ -150,63 +152,64 @@ class MetaAdminImpl(object):
                     raise MetaBException(MetaBException.COL_NOT_IN_FL, str(c), str(t))
 
         # Get schema description and version, it is ok if it is missing
-        ret = db.execCommand1(
+        ret = conn.execute(
             "SELECT version, descr FROM %s.ZZZ_Schema_Description" % dbName)
-        if not ret:
+        if ret.rowcount != 1:
             self._log.error(
                 "Db '%s' does not contain schema version/description", dbName)
             schemaVersion = "unknown"
             schemaDescr = ""
         else:
-            (schemaVersion, schemaDescr) = ret
+            (schemaVersion, schemaDescr) = ret.first()
 
         # This can be sometimes handy for debugging. (uncomment import too)
         # pp = pprint.PrettyPrinter(indent=2)
         # pp.pprint(theTable)
 
-        # Get host/port from authFile
-        hpDict = readCredentialFile(dbMysqlAuthF, self._log)
-        (host, port) = [hpDict[k] for k in ('host', 'port')]
+        # Get host/port from engine
+        host = conn.engine.url.host
+        port = conn.egine.url.port
 
         # Now, we will be talking to the metaserv database, so change
         # connection as needed
         if self._msMysqlAuthF != dbMysqlAuthF:
-            db = Db(read_default_file=self._msMysqlAuthF)
+            conn = getEngineFromFile(self._msMysqlAuthF).connect()
 
         # get ownerId, this serves as validation that this is a valid owner name
-        ret = db.execCommand1("SELECT userId FROM User WHERE mysqlUserName = %s",
-                              (owner,))
-        if not ret:
+        ret = conn.execute("SELECT userId FROM User WHERE mysqlUserName = %s",
+                           (owner,))
+
+        if ret.rowcount != 1:
             self._log.error("Owner '%s' not found.", owner)
             raise MetaBException(MetaBException.OWNER_NOT_FOUND, owner)
-        ownerId = ret[0]
+        ownerId = ret.scalar()
 
         # get projectId, this serves as validation that this is a valid project name
-        ret = db.execCommand1("SELECT projectId FROM Project WHERE projectName =%s",
-                              (projectName,))
-        if not ret:
+        ret = conn.execute("SELECT projectId FROM Project WHERE projectName =%s",
+                           (projectName,))
+        if ret.rowcount != 1:
             self._log.error("Project '%s' not found.", owner)
             raise MetaBException(MetaBException.PROJECT_NOT_FOUND, projectName)
-        projectId = ret[0]
+        projectId = ret.scalar()
 
         # Finally, save things in the MetaServ database
         cmd = "INSERT INTO Repo(url, projectId, repoType, lsstLevel, dataRelease, "
         cmd += "version, shortName, description, ownerId, accessibility) "
         cmd += "VALUES('/dummy',%s,'db',%s,%s,%s,%s,%s,%s,%s) "
-        opts = (str(projectId), level, dataRel, schemaVersion, dbName, schemaDescr,
-                str(ownerId), accessibility)
-        db.execCommand0(cmd, opts)
-        repoId = db.execCommand1("SELECT LAST_INSERT_ID()")[0]
+        opts = (projectId, level, dataRel, schemaVersion, dbName, schemaDescr,
+                ownerId, accessibility)
+        results = conn.execute(cmd, opts)
+        repoId = results.lastrowid
         cmd = "INSERT INTO DbMeta(dbMetaId, dbName, connHost, connPort) "
         cmd += "VALUES(%s,%s,%s,%s)"
-        db.execCommand0(cmd, (str(repoId), dbName, host, str(port)))
+        conn.execute(cmd, (repoId, dbName, host, port))
 
         for t in theTable:
             cmd = 'INSERT INTO DDT_Table(dbMetaId, tableName, descr) '
             cmd += 'VALUES(%s, %s, %s)'
-            db.execCommand0(cmd, (str(repoId), t,
-                                  theTable[t].get("description", "")))
-            tableId = db.execCommand1("SELECT LAST_INSERT_ID()")[0]
+            results = conn.execute(cmd, (repoId, t,
+                                         theTable[t].get("description", "")))
+            tableId = results.lastrowid
             isFirst = True
             for c in theTable[t]["columns"]:
                 if isFirst:
@@ -217,10 +220,10 @@ class MetaAdminImpl(object):
                 else:
                     cmd += ', '
                 cmd += '(%s, %s, %s, %s, %s, %s)'
-                opts += (c["name"], str(tableId), str(c["ord_pos"]),
+                opts += (c["name"], tableId, c["ord_pos"],
                          c.get("description", ""), c.get("ucd", ""),
                          c.get("unit", ""))
-            db.execCommand0(cmd, opts)
+            conn.execute(cmd, opts)
 
     def addUser(self, muName, fName, lName, affil, email):
         """
@@ -232,14 +235,14 @@ class MetaAdminImpl(object):
         @param affil  short name of the affilliation (home institution)
         @param email  email address
         """
-        db = Db(read_default_file=self._msMysqlAuthF)
+        conn = getEngineFromFile(self._msMysqlAuthF).connect()
         cmd = "SELECT instId FROM Institution WHERE instName = %s"
-        instId = db.execCommand1(cmd, (affil,))
+        instId = conn.execute(cmd, (affil,)).scalar()
         if instId is None:
             raise MetaBException(MetaBException.INST_NOT_FOUND, affil)
         cmd = "INSERT INTO User(mysqlUserName, firstName, lastName, email, instId) "
         cmd += "VALUES(%s, %s, %s, %s, %s)"
-        db.execCommand0(cmd, (muName, fName, lName, email, str(instId[0])))
+        conn.execute(cmd, (muName, fName, lName, email, instId))
 
     def addInstitution(self, name):
         """
@@ -247,12 +250,12 @@ class MetaAdminImpl(object):
 
         @param name  the name
         """
-        db = Db(read_default_file=self._msMysqlAuthF)
-        ret = db.execCommand1(
+        conn = getEngineFromFile(self._msMysqlAuthF).connect()
+        ret = conn.execute(
             "SELECT COUNT(*) FROM Institution WHERE instName=%s", (name,))
-        if ret[0] == 1:
+        if ret.scalar() == 1:
             raise MetaBException(MetaBException.INST_EXISTS, name)
-        db.execCommand0("INSERT INTO Institution(instName) VALUES(%s)", (name,))
+        conn.execute("INSERT INTO Institution(instName) VALUES(%s)", (name,))
 
     def addProject(self, name):
         """
@@ -260,9 +263,9 @@ class MetaAdminImpl(object):
 
         @param name  the name
         """
-        db = Db(read_default_file=self._msMysqlAuthF)
-        ret = db.execCommand1(
+        conn = getEngineFromFile(self._msMysqlAuthF).connect()
+        ret = conn.execute(
             "SELECT COUNT(*) FROM Project WHERE projectName=%s", (name,))
-        if ret[0] == 1:
+        if ret.scalar() == 1:
             raise MetaBException(MetaBException.PROJECT_EXISTS, name)
-        db.execCommand0("INSERT INTO Project(projectName) VALUES(%s)", (name,))
+        conn.execute("INSERT INTO Project(projectName) VALUES(%s)", (name,))

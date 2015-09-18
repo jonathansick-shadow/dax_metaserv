@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 
-from lsst.db.db import Db
+from lsst.db.engineFactory import getEngineFromFile
+from lsst.db import utils
+from lsst.db.testHelper import loadSqlScript
 
 queries = (
 '''INSERT INTO User(userId, mysqlUserName, firstName, lastName, affiliation) VALUES
@@ -46,13 +48,13 @@ queries = (
   (11, 'flags',  3, 'my flags',          '',            '')'''
 )
 
-db = Db(read_default_file="~/.lsst/dbAuth-metaServ.txt")
+conn = getEngineFromFile("~/.lsst/dbAuth-metaServ.txt").connect()
 
-db.dropDb("metaServ_core", mustExist=False)
-db.createDb("metaServ_core")
-db.loadSqlScript("sql/global.sql")
-db.loadSqlScript("sql/dbRepo.sql")
-db.loadSqlScript("sql/fileRepo.sql")
-db.useDb("metaServ_core")
+utils.dropDb(conn, "metaServ_core", mustExist=False)
+utils.createDb(conn, "metaServ_core")
+loadSqlScript(conn, "sql/global.sql")
+loadSqlScript(conn, "sql/dbRepo.sql")
+loadSqlScript(conn, "sql/fileRepo.sql")
+utils.useDb("metaServ_core")
 for q in queries:
-    db.execCommand0(q)
+    conn.execute(q)

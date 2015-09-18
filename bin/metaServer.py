@@ -44,7 +44,7 @@ app = Flask(__name__)
 
 def initEngine():
     config = ConfigParser.ConfigParser()
-    defaults_file = os.path.expanduser("~/.lsst/dbAuth-dbServ.txt")
+    defaults_file = os.path.expanduser("~/.lsst/dbAuth-dbServ.ini")
     config.readfp(open(defaults_file))
     db_config = dict(config.items("mysql"))
     # Translate user name
