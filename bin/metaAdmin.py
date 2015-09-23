@@ -32,8 +32,8 @@ import logging as log
 from optparse import OptionParser
 import sys
 
-from lsst.metaserv.metaAdminImpl import MetaAdminImpl
-from lsst.metaserv.metaBException import MetaBException
+from lsst.dax.metaserv.metaAdminImpl import MetaAdminImpl
+from lsst.dax.metaserv.metaBException import MetaBException
 
 
 ####################################################################################
@@ -259,14 +259,14 @@ OPTIONS
    -f
         Name of the output log file. If not specified, the output goes to stderr.
    -a
-        MySQL Authorization file with connection information to metaserv and
-        credentials for metaserv. It defaults to ~/.lsst/dbAuth-metaServ.txt.
+        SQLAlchemy configuration file with connection information to metaserv and
+        credentials for metaserv. It defaults to ~/.lsst/dbAuth-metaServ.ini.
 """
 
     parser = OptionParser(usage=usage)
     parser.add_option("-v", dest="verbT", default=10) # default is DEBUG
     parser.add_option("-f", dest="logF", default=None)
-    parser.add_option("-a", dest="authF", default='~/.lsst/dbAuth-metaServ.txt')
+    parser.add_option("-a", dest="authF", default='~/.lsst/dbAuth-metaServ.ini')
     (options, args) = parser.parse_args()
     if int(options.verbT) > 50: options.verbT = 50
     if int(options.verbT) <  0: options.verbT = 0
