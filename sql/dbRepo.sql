@@ -23,11 +23,11 @@
 -- @author Jacek Becla, SLAC
 
 
-CREATE TABLE DbMeta
+CREATE TABLE DbRepo
     -- <descr>Information about one database. One row per database.
     -- There is one:one mapping between repo and database.</descr>
 (
-    dbMetaId INT,
+    dbRepoId INT,
         -- <descr>Unique identifier. Matches corresponding repoId from the Repo
         -- table.</descr>
         -- <ucd>meta.id</ucd>
@@ -39,23 +39,32 @@ CREATE TABLE DbMeta
         -- <descr>Connection information: host.</descr>
     connPort INT,
         -- <descr>Connection information: port.</descr>
-    PRIMARY KEY DbMeta_dbMetaId(dbMetaId),
-    UNIQUE IDX_DbMeta_dbName(dbName)
+    PRIMARY KEY PK_DbRepo_dbRepoId(dbRepoId),
+    UNIQUE IDX_DbRepo_dbName(dbName),
+     CONSTRAINT FK_DbRepo_repoId
+        FOREIGN KEY(dbRepoId)
+        REFERENCES Repo(repoId)
 ) ENGINE=InnoDB;
 
 
-CREATE TABLE DbMetaAnnotations
-    -- <descr>Annotations for entries in DbMeta, in key-value form.-- </descr>
+CREATE TABLE DbRepoAnnotations
+    -- <descr>Annotations for entries in DbRepo, in key-value form.-- </descr>
 (
-    dbMetaId INT NOT NULL,
-        -- <descr>References entry in DbMeta table.</descr>
+    dbRepoId INT NOT NULL,
+        -- <descr>References entry in DbRepo table.</descr>
     userId INT NOT NULL,
         -- <descr>User who entered given annotation. References entry in
         -- User table.</descr>
     theKey VARCHAR(64) NOT NULL,
     theValue TEXT NOT NULL,
-    INDEX IDX_DbMetaAnnotations_dbMetaId(dbMetaId),
-    INDEX IDX_DbMetaAnnotations_userId(userId)
+    INDEX IDX_DbRepoAnnotations_dbRepoId(dbRepoId),
+    INDEX IDX_DbRepoAnnotations_userId(userId),
+    CONSTRAINT FK_DbRepoAnnotations_dbRepoId
+        FOREIGN KEY(dbRepoId)
+        REFERENCES DbRepo(dbRepoId),
+    CONSTRAiNT FK_DbRepoAnnotations_userId
+        FOREIGN KEY(userId)
+        REFERENCES User(userId)
 ) ENGINE = InnoDB;
 
 
@@ -66,14 +75,17 @@ CREATE TABLE DDT_Table
     tableId INT NOT NULL AUTO_INCREMENT,
         -- <descr>Unique identifier.</descr>
         -- <ucd>meta.id</ucd>
-    dbMetaId INT NOT NULL,
-        -- <descr>References entry in DbMeta - database where this table
+    dbRepoId INT NOT NULL,
+        -- <descr>References entry in DbRepo - database where this table
         -- belongs.</descr>
     tableName VARCHAR(64),
         -- <descr>The name of the table.</descr>
     descr TEXT,
         -- <descr>Table description.</descr>
-    PRIMARY KEY DDT_Table(tableId)
+    PRIMARY KEY PK_DDT_Table(tableId),
+    CONSTRAINT FK_DDTTable_dbRepoId
+        FOREIGN KEY(dbRepoId)
+        REFERENCES DbRepo(dbRepoId)
 ) ENGINE=InnoDB;
 
 
@@ -102,5 +114,8 @@ CREATE TABLE DDT_Column
         -- <descr>Display precision, for SUI.</descr>
     SUI_displayCol BOOL DEFAULT True,
         -- <descr>A flag whether to display this column or not by default.</descr>
-    PRIMARY KEY DDT_Column(columnId)
+    PRIMARY KEY PK_DDTColumn(columnId),
+    CONSTRAINT FK_DDTColumn_tableId
+        FOREIGN KEY(tableId)
+        REFERENCES DDT_Table(tableId)
 ) ENGINE=InnoDB;

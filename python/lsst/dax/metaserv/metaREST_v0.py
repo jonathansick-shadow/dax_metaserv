@@ -62,7 +62,7 @@ def getDb():
 @metaREST.route('/db/<string:lsstLevel>', methods=['GET'])
 def getDbPerType(lsstLevel):
     '''Lists databases for a given type.'''
-    query = "SELECT dbName FROM Repo JOIN DbMeta on (repoId=dbMetaId) WHERE lsstLevel = :lsstLevel"
+    query = "SELECT dbName FROM Repo JOIN DbRepo on (repoId=dbRepoId) WHERE lsstLevel = :lsstLevel"
     return _resultsOf(text(query), paramMap={"lsstLevel": lsstLevel})
 
 
@@ -70,8 +70,8 @@ def getDbPerType(lsstLevel):
 def getDbPerTypeDbName(lsstLevel, dbName):
     '''Retrieves information about one database.'''
     # We don't use lsstLevel here because db names are unique across all types.
-    query = "SELECT Repo.*, DbMeta.* " \
-            "FROM Repo JOIN DbMeta on (repoId=dbMetaId) WHERE dbName = :dbName"
+    query = "SELECT Repo.*, DbRepo.* " \
+            "FROM Repo JOIN DbRepo on (repoId=dbRepoId) WHERE dbName = :dbName"
     return _resultsOf(text(query), paramMap={"dbName": dbName}, scalar=True)
 
 
@@ -87,7 +87,7 @@ def getDbPerTypeDbNameTables(lsstLevel, dbName):
 def getDbPerTypeDbNameTablesTableName(lsstLevel, dbName, tableName):
     '''Retrieves information about a table from a given database.'''
     query = "SELECT DDT_Table.* FROM DDT_Table " \
-            "JOIN DbMeta USING (dbMetaId) " \
+            "JOIN DbRepo USING (dbRepoId) " \
             "WHERE dbName=:dbName AND tableName=:tableName"
     return _resultsOf(text(query), paramMap={"dbName": dbName, "tableName": tableName}, scalar=True)
 

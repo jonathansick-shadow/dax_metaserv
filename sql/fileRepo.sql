@@ -23,11 +23,67 @@
 -- @author Jacek Becla, SLAC
 
 
+CREATE TABLE FileRepo
+    -- <descr>Information about file repositories. One row per file repo.
+    -- This is a global table, (there is only one in the entire Metadata Store).
+    -- </descr>
+(
+    fRepoId INT,
+        -- <descr>References an entry in Repo.</descr>
+
+    -- can't think of things to put in there right now, but I am sure
+    -- we will identify these things...
+
+    PRIMARY KEY PK_FileRepo_fRepoId(fRepoId),
+    CONSTRAINT FK_FileRepo_fRepoId
+        FOREIGN KEY(fRepoId)
+        REFERENCES Repo(repoId)
+) ENGINE = InnoDB;
+
+
+CREATE TABLE FileRepoAnnotations
+    -- <descr>Annotations for entries in FileRepo, in key-value form.-- </descr>
+(
+    fRepoId INT NOT NULL,
+        -- <descr>References entry in FileRepo table.</descr>
+    userId INT NOT NULL,
+        -- <descr>User who entered given annotation. References entry in
+        -- User table.</descr>
+    theKey VARCHAR(64) NOT NULL,
+    theValue TEXT NOT NULL,
+    INDEX IDX_FileRepoAnnotations_fRepoId(fRepoId),
+    INDEX IDX_FileRepoAnnotations_userId(userId),
+    CONSTRAINT FK_FileRepoAnnotations_fRepoId
+        FOREIGN KEY(fRepoId)
+        REFERENCES FileRepo(fRepoId),
+    CONSTRAiNT FK_FileRepoAnnotations_userId
+        FOREIGN KEY(userId)
+        REFERENCES User(userId)
+) ENGINE = InnoDB;
+
+
+CREATE TABLE FileRepoTypes
+    -- <descr>Information about types of files in a file repository.
+    -- This is a global table, (there is only one in the entire Metadata Store).
+    -- </descr>
+(
+    fRepoId INT,
+        -- <descr>References an entry in FileRepo.</descr>
+    fileType ENUM('fits', 'config', 'csv', 'tcv', 'custom'),
+    fileCount INT,
+        -- <descr>Number of files in the repo.</descr>
+    INDEX IDX_FileRepoTypes_fRepoId(fRepoId),
+    CONSTRAINT FK_FileRepoTypes_fRepoId
+        FOREIGN KEY(fRepoId)
+        REFERENCES FileRepo(fRepoId)
+) ENGINE = InnoDB;
+
+
 CREATE TABLE File
     -- <descr>Information about one file. One row per file.</descr>
 (
     fileId INT NOT NULL AUTO_INCREMENT,
-    repoId INT NOT NULL,
+    fRepoId INT NOT NULL,
         -- <descr>Id of the repo this file belongs to.</descr>
     fileName VARCHAR(255) NOT NULL,
     url VARCHAR(255),
@@ -55,7 +111,10 @@ CREATE TABLE File
     lastBackup DATETIME,
         -- <descr>Time of the completion of the last successful backup.
         -- </descr>
-    PRIMARY KEY PK_File_fileId(fileId)
+    PRIMARY KEY PK_File_fileId(fileId),
+    CONSTRAINT FK_File_fRepoId
+        FOREIGN KEY(fRepoId)
+        REFERENCES FileRepo(fRepoId)
 ) ENGINE = InnoDB;
 
 
@@ -70,24 +129,33 @@ CREATE TABLE FileAnnotations
     theKey VARCHAR(64) NOT NULL,
     theValue TEXT NOT NULL,
     INDEX IDX_FileAnnotations_repoId(fileId),
-    INDEX IDX_FileAnnotations_userId(userId)
+    INDEX IDX_FileAnnotations_userId(userId),
+    CONSTRAINT FK_FileAnnotations_fileId
+        FOREIGN KEY(fileId)
+        REFERENCES File(fileId),
+    CONSTRAiNT FK_FileFileAnnotations_userId
+        FOREIGN KEY(userId)
+        REFERENCES User(userId)
 ) ENGINE = InnoDB;
 
 
 CREATE TABLE FitsMeta
     -- <descr>FITS-file specific information.</descr>
 (
-    fileId BIGINT NOT NULL,
+    fileId INT NOT NULL,
         -- <descr>Id of the corresponding entry in File table.</descr>
     hdus TINYINT NOT NULL,
-    PRIMARY KEY PK_FitsMeta_fileId(fileId)
+    PRIMARY KEY PK_FitsMeta_fileId(fileId),
+    CONSTRAINT FK_FitsMeta_fileId
+        FOREIGN KEY(fileId)
+        REFERENCES File(fileId)
 ) ENGINE=InnoDB;
 
 
 CREATE TABLE FitsStructuredMeta
     -- <descr>FITS-file specific structured metadata.</descr>
 (
-    fileId BIGINT NOT NULL,
+    fileId INT NOT NULL,
     hdu TINYINT NOT NULL,
     equinox DOUBLE,
     ra DOUBLE NOT NULL,
@@ -111,7 +179,10 @@ CREATE TABLE FitsStructuredMeta
         -- <unit>s</unit>
     INDEX IDX_fitsStructuredMeta_fileId(fileId),
     INDEX IDX_fitsStructuredMeta_ra(ra),
-    INDEX IDX_fitsStructuredMeta_decl(decl)
+    INDEX IDX_fitsStructuredMeta_decl(decl),
+    CONSTRAINT FK_fitsStructuredMeta_fileId
+        FOREIGN KEY(fileId)
+        REFERENCES File(fileId)
 ) ENGINE=InnoDB;
 
 
@@ -119,7 +190,7 @@ CREATE TABLE FitsUnstructuredMeta
     -- <descr>FITS-file specific unstructured metadata
     -- (key/value pairs).</descr>
 (
-    fileId BIGINT NOT NULL,
+    fileId INT NOT NULL,
         -- <descr>Id of the corresponding entry in File table.</descr>
     fitsKey VARCHAR(8) NOT NULL,
     hdu TINYINT NOT NULL,
@@ -127,13 +198,8 @@ CREATE TABLE FitsUnstructuredMeta
     intValue INTEGER,
     doubleValue DOUBLE,
     INDEX IDX_fitsUnstructuredMeta_fitsFileId(fileId),
-    INDEX IDX_fitsUnstructuredMeta_fitsKey(fitsKey)
+    INDEX IDX_fitsUnstructuredMeta_fitsKey(fitsKey),
+    CONSTRAINT FK_fitsUnstructuredMeta_fileId
+        FOREIGN KEY(fileId)
+        REFERENCES File(fileId)
 ) ENGINE=InnoDB;
-
-
-# todo
-#ALTER TABLE FitsKeyValues ADD CONSTRAINT FK_fitsKeyVal_fitsFileId
-#    FOREIGN KEY (fitsFileId) REFERENCES FitsFiles(fitsFileId);
-#
-#ALTER TABLE FitsPositions ADD CONSTRAINT FK_fitsPos_fitsFileId
-#    FOREIGN KEY (fitsFileId) REFERENCES FitsFiles(fitsFileId);

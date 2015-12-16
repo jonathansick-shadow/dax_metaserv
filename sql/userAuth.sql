@@ -23,6 +23,16 @@
 --
 -- @author Jacek Becla, SLAC
 
+CREATE TABLE Institution
+    -- <descr>Institutions.</descr>
+(
+    instId INT NOT NULL AUTO_INCREMENT,
+        -- <descr>Unique identifier.</descr>
+    instName VARCHAR(64),
+    PRIMARY KEY PK_Institution_instId(instId),
+    UNIQUE UQ_Institution_instName(instName)
+) ENGINE = InnoDB;
+
 
 CREATE TABLE User
     -- <descr>Basic information about every registered user. This is
@@ -40,17 +50,10 @@ CREATE TABLE User
     instId INT,
         -- <descr>Id of the institution the user is affiliated with.</descr>
     PRIMARY KEY PK_User_userId(userId),
-    UNIQUE UQ_User_mysqlUserName(mysqlUserName)
-) ENGINE = InnoDB;
-
-CREATE TABLE Institution
-    -- <descr>Institutions.</descr>
-(
-    instId INT NOT NULL AUTO_INCREMENT,
-        -- <descr>Unique identifier.</descr>
-    instName VARCHAR(64),
-    PRIMARY KEY PK_Institution_instId(instId),
-    UNIQUE UQ_Institution_instName(instName)
+    UNIQUE UQ_User_mysqlUserName(mysqlUserName),
+    CONSTRAINT FK_Institution_instId
+        FOREIGN KEY(instId)
+        REFERENCES Institution(instId)
 ) ENGINE = InnoDB;
 
 CREATE TABLE Project
@@ -77,7 +80,10 @@ CREATE TABLE User_Authorization
         -- <descr>Query load limit. Each query will have a "cost"
         -- associated with it. This limit is per hour. -1 = unlimited.
         -- </descr>
-    INDEX IDX_UserAuth_userId(userId)
+    INDEX IDX_UserAuth_userId(userId),
+    CONSTRAINT FK_UserAuth_userId
+        FOREIGN KEY(userId)
+        REFERENCES User(userId)
 ) ENGINE = InnoDB;
 
 
@@ -88,16 +94,18 @@ CREATE TABLE Groups
         -- <descr>Unique identifier.</descr>
     groupName VARCHAR(64),
     PRIMARY KEY PK_Group_groupId(groupId)
-
 ) ENGINE = InnoDB;
 
 
 CREATE TABLE Group_Authorization
     -- <descr>Per-group authorization.</descr>
 (
-    groupId INT NOT NULL
+    groupId INT NOT NULL,
         -- <descr>Id of the group for which given authorization is defined.
         -- </descr>
+    CONSTRAINT FK_GroupAuth_groupId
+        FOREIGN KEY(groupId)
+        REFERENCES Groups(groupId)
 ) ENGINE = InnoDB;
 
 
@@ -109,5 +117,28 @@ CREATE TABLE User_To_Group
     groupId INT NOT NULL,
         -- <descr>Id of the group.-- </descr>
     INDEX IDX_UserToGroup_userId(userId),
-    INDEX IDX_UserToGroup_groupId(groupId)
+    INDEX IDX_UserToGroup_groupId(groupId),
+    CONSTRAINT FK_UserToGroup_userId
+        FOREIGN KEY(userId)
+        REFERENCES User(userId),
+    CONSTRAINT FK_UserToGroup_groupId
+        FOREIGN KEY(groupId)
+        REFERENCES Groups(groupId)
+) ENGINE = InnoDB;
+
+CREATE TABLE User_To_Project
+    -- <descr>Definition of which user belongs to which project.</descr>
+(
+    userId INT NOT NULL,
+        -- <descr>Id of the user.-- </descr>
+    projectId INT NOT NULL,
+        -- <descr>Id of the project.-- </descr>
+    INDEX IDX_UserToProject_userId(userId),
+    INDEX IDX_UserToProject_projectId(projectId),
+    CONSTRAINT FK_UserToProject_userId
+        FOREIGN KEY(userId)
+        REFERENCES User(userId),
+    CONSTRAINT FK_UserToProject_projectId
+        FOREIGN KEY(projectId)
+        REFERENCES Project(projectId)
 ) ENGINE = InnoDB;

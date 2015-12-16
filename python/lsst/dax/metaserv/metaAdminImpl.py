@@ -200,12 +200,12 @@ class MetaAdminImpl(object):
                 ownerId, accessibility)
         results = conn.execute(cmd, opts)
         repoId = results.lastrowid
-        cmd = "INSERT INTO DbMeta(dbMetaId, dbName, connHost, connPort) "
+        cmd = "INSERT INTO DbRepo(dbRepoId, dbName, connHost, connPort) "
         cmd += "VALUES(%s,%s,%s,%s)"
         conn.execute(cmd, (repoId, dbName, host, port))
 
         for t in theTable:
-            cmd = 'INSERT INTO DDT_Table(dbMetaId, tableName, descr) '
+            cmd = 'INSERT INTO DDT_Table(dbRepoId, tableName, descr) '
             cmd += 'VALUES(%s, %s, %s)'
             results = conn.execute(cmd, (repoId, t,
                                          theTable[t].get("description", "")))

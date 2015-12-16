@@ -88,38 +88,11 @@ CREATE TABLE RepoAnnotations
     theKey VARCHAR(64) NOT NULL,
     theValue TEXT NOT NULL,
     INDEX IDX_RepoAnnotations_repoId(repoId),
-    INDEX IDX_RepoAnnotations_userId(userId)
+    INDEX IDX_RepoAnnotations_userId(userId),
+    CONSTRAINT FK_repoAnnot_repoId
+        FOREIGN KEY(repoId)
+        REFERENCES Repo(repoId),
+    CONSTRAiNT FK_RepoAnnotations_userId
+        FOREIGN KEY(userId)
+        REFERENCES User(userId)
 ) ENGINE = InnoDB;
-
-
-CREATE TABLE FileRepo
-    -- <descr>Information about file repositories. One row per file repo.
-    -- This is a global table, (there is only one in the entire Metadata Store).
-    -- </descr>
-(
-    repoId INT,
-        -- <descr>References an entry in Repo.</descr>
-
-    -- can't think of things to put in there right now, but I am sure
-    -- we will identify these things...
-
-    PRIMARY KEY FileRepo_repoId(repoId)
-) ENGINE = InnoDB;
-
-
-CREATE TABLE FileRepoTypes
-    -- <descr>Information about types of files in a file repository.
-    -- This is a global table, (there is only one in the entire Metadata Store).
-    -- </descr>
-(
-    repoId INT,
-        -- <descr>References an entry in FileRepo.</descr>
-    fileType ENUM('fits', 'config', 'csv', 'tcv', 'custom'),
-    fileCount INT,
-        -- <descr>Number of files in the repo.</descr>
-    INDEX IDX_FileRepoTypes_repoId(repoId)
-) ENGINE = InnoDB;
-
-
-
--- FileRepoAnnotations, similar to RepoAnnotations goes here...
