@@ -1,8 +1,11 @@
-setupRequired(db)
 setupRequired(dax_webservcommon)
-setupRequired(anaconda)
+setupRequired(db)
+setupRequired(flask)
 setupRequired(mysqlpython)
+setupRequired(python)
+setupRequired(scons)
 setupRequired(sconsUtils)
+setupRequired(sqlalchemy)
 
 envPrepend(LD_LIBRARY_PATH, ${PRODUCT_DIR}/lib)
 envPrepend(DYLD_LIBRARY_PATH, ${PRODUCT_DIR}/lib)
