@@ -67,48 +67,63 @@ _defaultLine = re.compile(r'\s+DEFAULT\s+(.+?)[\s,]')
 # Helper functions
 ####################################################################################
 
+
 def _isIndexDefinition(c):
     return c in ["PRIMARY", "KEY", "INDEX", "UNIQUE"]
+
 
 def _isCommentLine(theString):
     return _commentLine.match(theString) is not None
 
+
 def _isUnitLine(theString):
     return _unitLine.search(theString) is not None
+
 
 def _isUcdLine(theString):
     return _ucdLine.search(theString) is not None
 
+
 def _retrUnit(theString):
     return _unitLine.search(theString).group(1)
+
 
 def _retrUcd(theString):
     return _ucdLine.search(theString).group(1)
 
+
 def _containsDescrTagStart(theString):
     return '<descr>' in theString
+
 
 def _containsDescrTagEnd(theString):
     return '</descr>' in theString
 
+
 def _retrDescr(theString):
     return _descrLine.search(theString).group(1)
+
 
 def _retrDescrStart(theString):
     return _descrStart.search(theString).group(1)
 
+
 def _retrDescrMid(theString):
     return _descrMiddle.search(theString).group(1)
+
 
 def _retrDescrEnd(theString):
     return _descrEnd.search(theString).group(1).rstrip()
 
+
 def _retrIsNotNull(theString):
     return 'NOT NULL' in theString
+
 
 def _retrType(theString):
     t = theString.split()[1].rstrip(',')
     return "FLOAT" if t == "FLOAT(0)" else t
+
 
 def _retrDefaultValue(theString):
     if not _defaultLine.search(theString):
@@ -121,6 +136,7 @@ def _retrDefaultValue(theString):
         if a == 'DEFAULT':
             returnNext = 1
 
+
 def _retrIdxColumns(theString):
     colExprs = _idxCols.search(theString).group(1).split(',')
     columns = [" ".join([word for word in expr.split()
@@ -130,6 +146,7 @@ def _retrIdxColumns(theString):
 ####################################################################################
 # The parseSchema function
 ####################################################################################
+
 
 def parseSchema(inFName):
     """Do actual parsing. Returns the retrieved structure as a table. The
@@ -181,7 +198,7 @@ def parseSchema(inFName):
                 engineName = m.group(2)
                 in_table["engine"] = engineName
             in_table = None
-        elif in_table is not None: # process columns for given table
+        elif in_table is not None:  # process columns for given table
             m = _columnLine.match(line)
             if m is not None:
                 firstWord = m.group(1)
@@ -191,16 +208,16 @@ def parseSchema(inFName):
                         t = "PRIMARY KEY"
                     elif firstWord == "UNIQUE":
                         t = "UNIQUE"
-                    idxInfo = {"type" : t,
-                               "columns" : _retrIdxColumns(line)
-                           }
+                    idxInfo = {"type": t,
+                               "columns": _retrIdxColumns(line)
+                               }
                     in_table.setdefault("indexes", []).append(idxInfo)
                 else:
-                    in_col = {"name" : firstWord,
-                              "displayOrder" : str(colNum),
-                              "type" : _retrType(line),
-                              "notNull" : _retrIsNotNull(line),
-                    }
+                    in_col = {"name": firstWord,
+                              "displayOrder": str(colNum),
+                              "type": _retrType(line),
+                              "notNull": _retrIsNotNull(line),
+                              }
                     dv = _retrDefaultValue(line)
                     if dv is not None:
                         in_col["defaultValue"] = dv
@@ -208,7 +225,7 @@ def parseSchema(inFName):
                     if "columns" not in in_table:
                         in_table["columns"] = []
                     in_table["columns"].append(in_col)
-            elif _isCommentLine(line): # handle comments
+            elif _isCommentLine(line):  # handle comments
                 if in_col is None:    # table comment
 
                     if _containsDescrTagStart(line):
@@ -236,11 +253,11 @@ def parseSchema(inFName):
                         else:
                             in_col["description"] += _retrDescrMid(line)
 
-                                      # units
+                            # units
                     if _isUnitLine(line):
                         in_col["unit"] = _retrUnit(line)
 
-                                      # ucds
+                        # ucds
                     if _isUcdLine(line):
                         in_col["ucd"] = _retrUcd(line)
 
@@ -254,5 +271,5 @@ def printIt():
     pp = pprint.PrettyPrinter(indent=2)
     pp.pprint(t)
 
-#if __name__ == '__main__':
+# if __name__ == '__main__':
 #    printIt()

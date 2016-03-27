@@ -42,6 +42,7 @@ from lsst.dax.metaserv import metaREST_v0
 
 app = Flask(__name__)
 
+
 def initEngine():
     config = ConfigParser.ConfigParser()
     defaults_file = os.path.expanduser("~/.lsst/dbAuth-dbServ.ini")
@@ -58,6 +59,7 @@ engine = initEngine()
 
 app.config["default_engine"] = engine
 
+
 @app.route('/')
 def getRoot():
     fmt = request.accept_mimetypes.best_match(['application/json', 'text/html'])
@@ -66,6 +68,7 @@ def getRoot():
     if fmt == "text/html":
         return s
     return json.dumps(s)
+
 
 @app.route('/meta')
 def getMeta():

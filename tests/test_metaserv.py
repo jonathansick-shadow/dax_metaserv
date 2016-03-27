@@ -8,6 +8,7 @@ import MySQLdb
 
 
 class MockResults(list):
+
     def __init__(self, seq=(), description=None):
         super(MockResults, self).__init__(seq)
         self.cursor = MagicMock()

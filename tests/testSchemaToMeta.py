@@ -40,6 +40,7 @@ import unittest
 # local
 from lsst.dax.metaserv.schemaToMeta import parseSchema
 
+
 class TestS2M(unittest.TestCase):
 
     def testBasics(self):
@@ -113,11 +114,10 @@ CREATE TABLE t2
         self.assertEqual(theTable["t1"]["indexes"][1]["columns"], "s")
         self.assertEqual(theTable["t2"]["description"], "This is t2 table.")
         self.assertEqual(theTable["t2"]["columns"][0]["description"],
-               "This is a very long description of the t2.id2.")
+                         "This is a very long description of the t2.id2.")
         self.assertEqual(theTable["t2"]["columns"][1]["description"],
                          "Description for s2.")
         self.assertEqual(theTable["t2"]["engine"], "InnoDB")
-
 
     def testComments(self):
         """
@@ -149,7 +149,6 @@ CREATE TABLE t3 (
         theTable = parseSchema(fName)
         self.assertEqual(len(theTable), 1)
 
-
     def testFloat(self):
         """
         Test FLOAT(0)
@@ -167,7 +166,6 @@ CREATE TABLE t (
         self.assertEqual(len(theTable["t"]["columns"]), 2)
         self.assertEqual(theTable["t"]["columns"][0]["type"], "FLOAT")
         self.assertEqual(theTable["t"]["columns"][1]["type"], "FLOAT")
-
 
     def testIndices(self):
         """

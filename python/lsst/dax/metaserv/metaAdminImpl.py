@@ -118,7 +118,7 @@ class MetaAdminImpl(object):
         # Check if the number of columns matches
         if nColumns != ret.rowcount:
             self._log.error("Number of columns in ascii file "
-                    "(%d) != number of columns in db (%d)", nColumns, ret.rowcount)
+                            "(%d) != number of columns in db (%d)", nColumns, ret.rowcount)
             raise MetaBException(MetaBException.NOT_MATCHING)
 
         rows = ret.fetchall()

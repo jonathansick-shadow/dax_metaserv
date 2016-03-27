@@ -30,16 +30,16 @@ Exception for MetaServ Backend.
 from lsst.db.exception import produceExceptionClass
 
 MetaBException = produceExceptionClass('MetaBException', [
-    (3005, "BAD_CMD",           "Bad command, see HELP for details."),
+    (3005, "BAD_CMD", "Bad command, see HELP for details."),
     (3010, "DB_DOES_NOT_EXIST", "Database does not exist."),
-    (3015, "NOT_MATCHING",      "Schema from db and ascii file do not match."),
-    (3020, "TB_NOT_IN_DB",      "Table not found in the database."),
-    (3025, "COL_NOT_IN_TB",     "Column not found in the table."),
-    (3030, "COL_NOT_IN_FL",     "Column not found in the ascii file."),
-    (3035, "OWNER_NOT_FOUND",   "Owner not found."),
-    (3040, "PROJECT_EXISTS",    "Project already exists."),
+    (3015, "NOT_MATCHING", "Schema from db and ascii file do not match."),
+    (3020, "TB_NOT_IN_DB", "Table not found in the database."),
+    (3025, "COL_NOT_IN_TB", "Column not found in the table."),
+    (3030, "COL_NOT_IN_FL", "Column not found in the ascii file."),
+    (3035, "OWNER_NOT_FOUND", "Owner not found."),
+    (3040, "PROJECT_EXISTS", "Project already exists."),
     (3045, "PROJECT_NOT_FOUND", "Project not found."),
-    (3050, "INST_EXISTS",       "Institution already exists.."),
-    (3055, "INST_NOT_FOUND",    "Institution not found."),
-    (9998, "NOT_IMPLEMENTED",   "Feature not implemented yet."),
-    (9999, "INTERNAL",          "Internal error.")])
+    (3050, "INST_EXISTS", "Institution already exists.."),
+    (3055, "INST_NOT_FOUND", "Institution not found."),
+    (9998, "NOT_IMPLEMENTED", "Feature not implemented yet."),
+    (9999, "INTERNAL", "Internal error.")])
